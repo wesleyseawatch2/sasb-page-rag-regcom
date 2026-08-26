@@ -20,6 +20,7 @@ data/private/
 models/
 checkpoints/
 outputs/runtime/
+runs/
+cache/
 *.key
 credentials*.json
-

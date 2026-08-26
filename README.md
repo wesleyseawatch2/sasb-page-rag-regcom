@@ -2,10 +2,9 @@
 
 This repository contains the paper, source snapshots, evaluation utilities, and
 selected analysis artifacts for the IMNTPU participation in the NTCIR-19
-RegCom task. The current implemented system focuses on Subtask 2: single-page
-SASB metric verification. Planned work extends it into a traceable, multimodal
-Subtask 1 pipeline for full-report evidence-page retrieval and end-to-end
-compliance checking.
+RegCom task. It includes the submitted Subtask 2 verifier and a runnable,
+traceable Subtask 1 baseline for full-report evidence-page retrieval, optional
+VLM reranking, and export back into the Subtask 2 input schema.
 
 ## Current results
 
@@ -25,6 +24,7 @@ submissions that use different retained rows, cleaning rules, or modalities.
 ```text
 paper/                  Revised paper source, bibliography, figure, and PDF
 src/task2/              Text-based RAG and embedding baselines
+src/task1/              Full-PDF retrieval, evaluation, and VLM reranking
 src/orchestrator/       Preserved orchestrator source snapshots
 evaluation/             Evaluation utilities
 artifacts/metrics/      Selected metrics and stage-wise analysis tables
@@ -32,12 +32,19 @@ docs/TASK1_VLM_PLAN.md  Full Task 1 VLM research and implementation plan
 docs/EXPERIMENT_LOG.md   Reproducible run-record template
 ```
 
-## Task 1 roadmap
+## Task 1 baseline
 
-The planned system combines PDF parsing, OCR fallback, ToC grounding, BM25,
-multilingual dense retrieval, unit/table matching, reciprocal-rank fusion, VLM
-reranking, and the existing Task 2 verifier. See
-[docs/TASK1_VLM_PLAN.md](docs/TASK1_VLM_PLAN.md).
+The implemented first baseline combines PDF parsing, TF-IDF retrieval,
+metric/unit rules, optional multilingual dense retrieval, reciprocal-rank
+fusion, cached Top-10 VLM reranking, evaluation, and Task 2 export. See
+[src/task1/README.md](src/task1/README.md) for commands and
+[docs/TASK1_VLM_PLAN.md](docs/TASK1_VLM_PLAN.md) for the remaining ablations.
+
+On the reconstructed analysis set, the local TF-IDF + rule RRF baseline indexed
+63 reports and 7,179 pages. Among 465 queries with non-empty reconstructed gold
+sets, it obtained Hit@1 0.151, Hit@5 0.383, Hit@10 0.514, and MRR 0.254. These
+are diagnostic results reconstructed from Subtask 2 truth, not official Task 1
+scores. No paid VLM calls were used for these numbers.
 
 ## Setup
 
@@ -79,7 +86,7 @@ bibliography.
 
 - Subtask 2 preserved experiments: complete
 - Cross-submission comparative analysis: complete
-- Task 1 VLM implementation: planned, not yet reported as an experimental result
+- Task 1 local retrieval/evaluation and VLM interface: implemented
+- Task 1 API VLM experiment: ready, intentionally opt-in and not yet executed
 - Task 1 official reproduction: pending confirmation of official inputs, gold
   page sets, PDF mapping, and evaluation rules
-

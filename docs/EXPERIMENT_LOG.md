@@ -108,3 +108,22 @@ Copy this template for every reported run.
 - Timing/cost:
 - Error annotations:
 
+---
+
+## Completed diagnostic run: Task 1 local retrieval (2026-08-26)
+
+- Status: complete
+- Scope: reconstructed from `test_truth.csv`; not the official Task 1 contract
+- Queries/reports/pages: 621 / 63 / 7,179
+- Missing PDFs: 0
+- Non-empty/empty reconstructed gold: 465 / 156
+- Conflicting grouped labels: 230 queries
+- Retrieval: page TF-IDF + positive metric/unit rules, weighted RRF (`k=60`)
+- Dense retrieval: disabled for this first reproducible local baseline
+- VLM: dry-run verified; no API calls or cost incurred
+- Hit@1/5/10: 0.151 / 0.383 / 0.514
+- Near@1: 0.194
+- MRR: 0.254
+- Runtime artifacts: `runs/task1-full/` (ignored because inputs are restricted)
+- Validity note: diagnostic only; empty-gold handling and official page-set
+  scoring must be confirmed before making an official Task 1 claim

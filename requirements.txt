@@ -6,4 +6,4 @@ scikit-learn
 sentence-transformers
 transformers
 torch
-
+openai
