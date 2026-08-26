@@ -1,0 +1,9 @@
+python-dotenv
+PyMuPDF
+numpy
+pandas
+scikit-learn
+sentence-transformers
+transformers
+torch
+

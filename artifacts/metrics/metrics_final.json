@@ -1,0 +1,45 @@
+{
+  "pred_path": "C:\\Users\\lubob\\Desktop\\regcomagent_orchestrator_code_package_no_pdf\\data\\predictions\\regcomagent_orchestrator_experiment\\06_final_gpt4o_meta.csv",
+  "evaluated": 201,
+  "correct": 100,
+  "micro_f1": 0.4975,
+  "macro_f1": 0.4228,
+  "missing_truth": 0,
+  "invalid": 0,
+  "pred_counts": {
+    "yes but not complete": 46,
+    "no": 135,
+    "yes": 20
+  },
+  "per_class": {
+    "yes": {
+      "precision": 0.8,
+      "recall": 0.1882,
+      "f1": 0.3048,
+      "support": 85
+    },
+    "yes but not complete": {
+      "precision": 0.2609,
+      "recall": 0.3529,
+      "f1": 0.3,
+      "support": 34
+    },
+    "no": {
+      "precision": 0.5333,
+      "recall": 0.878,
+      "f1": 0.6636,
+      "support": 82
+    }
+  },
+  "confusion": {
+    "yes -> yes but not complete": 25,
+    "yes -> no": 44,
+    "yes but not complete -> no": 19,
+    "no -> no": 72,
+    "yes -> yes": 16,
+    "yes but not complete -> yes but not complete": 12,
+    "yes but not complete -> yes": 3,
+    "no -> yes but not complete": 9,
+    "no -> yes": 1
+  }
+}

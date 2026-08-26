@@ -1,0 +1,26 @@
+{
+  "gemini_25_pro": {
+    "evaluated": 793,
+    "accuracy": 0.6507,
+    "micro_f1": 0.6507,
+    "macro_f1": 0.614,
+    "predictions_path": "data\\predictions\\gemini_25_pro\\predictions_793_gemini_25_pro_no_zh.csv",
+    "metrics_path": "data\\predictions\\gemini_25_pro\\metrics_793_gemini_25_pro_no_zh.json"
+  },
+  "glm_5_2_rag": {
+    "evaluated": 793,
+    "accuracy": 0.628,
+    "micro_f1": 0.628,
+    "macro_f1": 0.5963,
+    "predictions_path": "data\\predictions\\english_prediction_glm_rag\\predictions_793_no_zh_combined.csv",
+    "metrics_path": "data\\predictions\\english_prediction_glm_rag\\metrics_793_no_zh_combined.json"
+  },
+  "minilm_logreg": {
+    "evaluated": 793,
+    "accuracy": 0.4603,
+    "micro_f1": 0.4603,
+    "macro_f1": 0.4489,
+    "predictions_path": "C:\\Users\\wesley\\OneDrive\\桌面\\regcomagent_orchestrator_code_package_no_pdf\\data\\predictions\\embedding_classifier_baseline\\predictions_793_minilm_no_zh_793.csv",
+    "metrics_path": "data\\predictions\\embedding_classifier_baseline\\metrics_793_minilm_no_zh_793.json"
+  }
+}

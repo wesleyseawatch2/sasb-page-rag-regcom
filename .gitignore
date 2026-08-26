@@ -1,0 +1,25 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.idea/
+.vscode/
+*.log
+*.tmp
+*.zip
+*.7z
+*.pdf
+!paper/regcomagent_rag_ntcir.pdf
+Training Set/
+pages/
+data/raw/
+data/private/
+models/
+checkpoints/
+outputs/runtime/
+*.key
+credentials*.json
+

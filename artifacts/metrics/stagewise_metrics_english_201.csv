@@ -1,0 +1,7 @@
+﻿"stage","evaluated","correct","micro_f1","macro_f1"
+"base_worker_prediction","201","112","0.5572","0.3952"
+"after_aggregator","201","112","0.5572","0.3952"
+"after_review_all","201","99","0.4925","0.4187"
+"after_review_gated","201","112","0.5572","0.3952"
+"after_gpt4o_meta_review","201","99","0.4925","0.4127"
+"final_prediction","201","99","0.4925","0.4127"

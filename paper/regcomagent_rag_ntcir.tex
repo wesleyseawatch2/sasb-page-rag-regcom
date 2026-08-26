@@ -1,0 +1,312 @@
+\documentclass[sigconf,article]{acmart}
+
+% for NTCIR proceedings
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagenumbering{gobble}
+
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{xurl}
+\graphicspath{{./}{paper_ntcir/}}
+\setlength{\emergencystretch}{2em}
+
+\hyphenation{SASB-Page-RAG Sentence-BERT MiniLM}
+\newcommand{\SASBPageRAG}{SASB\-Page\-RAG}
+\newcommand{\retraug}{retrieval\allowbreak-augmented}
+\newcommand{\openSource}{open\allowbreak-source}
+\newcommand{\logreg}{logistic\allowbreak-regression}
+
+\begin{document}
+
+\title{\SASBPageRAG{} at the NTCIR-19 RegCom Task: Retrieval-Augmented Few-Shot Verification for Single-Page ESG Compliance}
+
+\author{Wei Chen Huang}
+\affiliation{
+  \institution{National Taipei University}
+  \country{Taiwan}
+}
+\email{wesleyseawatch@gmail.com}
+
+\author{Hsin Ting Lu}
+\affiliation{
+  \institution{National Taipei University}
+  \country{Taiwan}
+}
+\email{hsintinglubob@gmail.com}
+
+\author{Min Yuh Day}
+\authornote{Corresponding author.}
+\affiliation{
+  \institution{National Taipei University}
+  \country{Taiwan}
+}
+\email{myday@gm.ntpu.edu.tw}
+
+\begin{abstract}
+This paper reports \SASBPageRAG{}, a compact \retraug{} system for the NTCIR-19 RegCom single-page metric verification task. Given a SASB metric and an ESG report page, the system predicts whether the page addresses the metric and, if so, whether the disclosure category and unit of measure comply with the SASB requirement. Instead of fine-tuning a language model, we use the training data as a retrieval memory. TF-IDF retrieval selects semantically similar and label-balanced few-shot examples, which are combined with SASB metadata and extracted PDF page text in a structured verifier prompt. On 793 non-Chinese test rows, Gemini 2.5 Pro and GLM-5.2 obtain Macro F1 scores of 0.6140 and 0.5963, respectively, compared with 0.4489 for a MiniLM embedding classifier. We further compare our text-based verifier with two other RegCom submissions. Across the independently reported experiments, metric-prioritized demonstrations and page images emerge as promising complementary signals, while all three studies identify partial disclosure as a central difficulty. Because the submissions differ in language coverage, retained instances, data cleaning, and input modality, we treat their scores as contextual rather than as a direct ranking.
+\end{abstract}
+
+\keywords{ESG compliance, SASB, \retraug{} generation, few-shot learning, large language models, multilingual NLP}
+
+\maketitle
+\pagestyle{plain}
+
+\section*{Team Name}
+IMNTPU
+
+\section*{Subtasks}
+RegCom Task 1 - Subtask 2: Single-Page Metric Verification. This report focuses on the non-Chinese subset: English, French, Japanese, Korean, and Thai.
+
+\section{Introduction}
+Sustainability reporting standards require firms to disclose environmental, social, and governance (ESG) information according to specific metric definitions, disclosure categories, and units of measure. The Sustainability Accounting Standards Board (SASB) standards are representative of this metric-oriented style: a disclosure is not only about a topic, but also about whether it satisfies a precise metric, category, and unit requirement~\cite{sasb2023standards}. ESG reports are long, multilingual, and often semi-structured, so page-level compliance checking is costly for regulators, assurance providers, and analysts.
+
+The NTCIR-19 RegCom task formulates this challenge as multinational, multilingual, and multi-industry regulatory compliance verification for ESG reports~\cite{seki2026overview,ntcir19regcom}. In Subtask 2, each instance contains a SASB metric row and a single page from an ESG report. A system must predict three fields: \texttt{pred\_label}, \texttt{category\_match}, and \texttt{unit\_match}. The main label has three values: \texttt{yes}, \texttt{yes but not complete}, and \texttt{no}. This makes the task harder than topical relevance classification. A page may discuss the same ESG topic yet fail to disclose the required quantity, omit sub-items, use a proxy, or report an incompatible unit.
+
+This paper presents \SASBPageRAG{}, a lightweight \retraug{} verifier for single-page SASB metric verification. The system uses the labeled training rows as a retrieval memory and asks one LLM verifier to make a structured page-level judgement. The design follows the intuition of few-shot prompting~\cite{brown2020language} and \retraug{} generation~\cite{lewis2020retrieval}: rather than updating model parameters, the system supplies task-relevant examples at inference time. This design allows us to compare strong closed LLMs with a fast \openSource{} embedding classifier under the same data split and output schema.
+
+The contribution of this report is fourfold. First, we describe a \retraug{} few-shot prompting strategy for SASB page-level verification. Second, we compare Gemini 2.5 Pro, GLM-5.2, and a MiniLM \logreg{} baseline on the same 793 non-Chinese test rows. Third, we analyze class-level and language-level behavior, showing that the main remaining challenge is the boundary around partial disclosure. Fourth, we place these findings in the context of the Cierpa and CSCU submissions, comparing retrieval design, evidence modality, few-shot selection, evaluation scope, and reported limitations without treating non-aligned scores as a leaderboard.
+
+\section{Related Work}
+\subsection{ESG Disclosure Analysis and Multilingual Verification}
+ESG disclosure analysis focuses on evaluating the completeness and reliability of environmental, social, and governance information in corporate sustainability reports~\cite{schmoll2025automated}. Since these reports may be written in different languages and vary across regions, industries, and reporting formats, multilingual verification has become an important issue in sustainability analysis~\cite{li2024evaluating}. Researchers need to determine whether the disclosed content satisfies specific reporting standards and whether the meaning remains consistent across languages. This study focuses on the relationship between ESG reports and SASB metrics, using model-based methods to classify disclosures as complete, partially complete, or not disclosed.
+
+Prior ESG NLP research has shown that domain-specific language models and evidence extraction are useful for sustainability and financial text. ClimateBERT adapts transformer language modeling to climate-related corporate and news text~\cite{webersinke2022climatebert}, while Kannan and Seki extract textual evidence for ESG scores from financial reports~\cite{kannan2023textual}. These studies motivate the use of report evidence rather than only document-level labels, but they do not directly address SASB metric-level compliance decisions.
+
+\subsection{Multilingual Promise and Compliance Verification}
+Multilingual promise and compliance verification has become an important research direction in ESG text analysis. Corporate sustainability reports are often published in different languages, and the same commitment or disclosure may vary across languages, industries, and reporting formats. Therefore, models need to determine whether the commitment, supporting evidence, and standard requirements are semantically consistent. Recent work such as ML-Promise introduces multilingual corporate promise verification for ESG reports and studies evidence assessment across languages~\cite{seki2025mlpromise}. SemEval-2025 Task 6 further frames corporate promise verification as a multilingual and multi-industry task involving commitment detection and evidence consistency~\cite{chen2025semeval}. In contrast, NTCIR-19 RegCom focuses more on compliance verification by asking whether a single report page satisfies a specific SASB metric, including category and unit compatibility~\cite{ntcir19regcom}. Such tasks therefore emphasize not only whether a topic is mentioned, but also whether the disclosure actually meets the required standard.
+
+\subsection{Retrieval-Augmented and Embedding-Based Methods}
+Our method is also related to few-shot prompting, \retraug{} generation, classical term weighting, and sentence embeddings. Large language models can perform new tasks from a small number of demonstrations~\cite{brown2020language}, and \retraug{} generation supplies task-relevant external evidence at inference time~\cite{lewis2020retrieval}. We use TF-IDF because it is a strong, transparent lexical retrieval baseline for term-weighted document matching~\cite{salton1988term}. Sentence-BERT and multilingual knowledge distillation provide efficient embedding baselines for cross-lingual semantic matching~\cite{reimers2019sentencebert,reimers2020multilingual}. \SASBPageRAG{} combines these ideas by using retrieval to select few-shot cases for a structured single-page verifier.
+
+\subsection{Prompt-based Large Language Models for ESG Classification}
+Prompt-based Large Language Model classification uses natural language instructions to guide models in performing specific classification tasks without necessarily retraining model parameters. In ESG disclosure classification, disclosure standards, report segments, supporting evidence, and label definitions can be integrated into the prompt, allowing the model to judge whether a company's disclosure satisfies a specific metric. Compared with traditional classifiers, prompt-based methods are more suitable for long, unstructured reports and diverse semantic expressions. When combined with a few examples or retrieved similar cases, the model can better understand the differences among labels such as complete disclosure, partial disclosure, and no disclosure. Therefore, prompt-based LLM classification provides a flexible approach for automated ESG report analysis.
+
+\subsection{Comparison with Other RegCom Submissions}
+Two other submitted systems provide useful contrasts to our page-text RAG design. Cierpa decomposes full-report compliance checking into relevant-page retrieval and label inference~\cite{endo2026cierpa}. Its retrieval pipeline combines BM25, text embeddings, VLM-generated descriptions, image embeddings, reciprocal-rank fusion, and VLM reranking. For Subtask 2, it compares zero-shot inference with few-shot and extended few-shot prompts, using either random or metric-prioritized example selection. This design tests both evidence localization and demonstration choice, but requires several embedding and generative components and incurs additional reranking cost.
+
+CSCU instead emphasizes traceable evidence grounding~\cite{boonsuriyatham2026cscu}. Its Subtask 1 system uses table-of-contents-first section localization with a full-document fallback and a VLM-guided candidate verifier. For Subtask 2, it directly compares text-only, image-only, and text-plus-image page evidence. This design isolates the value of page modality more directly than our experiments, although its strongest retrieval variant jointly changes section selection and final page verification, so the gain cannot be attributed to a single component. In contrast, \SASBPageRAG{} assumes the task-provided page and concentrates on lightweight case retrieval and metric-level compliance reasoning from extracted text.
+
+\begin{table*}[t]
+\caption{Design comparison across three RegCom submissions. ``RAG examples'' refers to retrieval of labeled demonstrations for the verifier, whereas ``page retrieval'' refers to localization within a full report.}
+\label{tab:system-comparison}
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllll}
+\toprule
+System & Task focus & Page evidence & Page retrieval & RAG examples & Main trade-off \\
+\midrule
+\SASBPageRAG{} & Subtask 2 & Extracted text & Task-provided page & TF-IDF, metric-first, label-balanced & Lightweight; loses layout \\
+Cierpa & Subtasks 1--2 & Text and page image & Lexical, semantic, visual, VLM reranking & Random or metric-prioritized & Broad signals; higher cost \\
+CSCU & Subtasks 1--2 & Text and/or page image & ToC-first, fallback, VLM guidance & Prompt-based verification & Traceable and multimodal; coupled changes \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+\section{Methods}
+Subtask 2 is Single-Page Metric Verification. Given a single SASB metric and a single page from an ESG report, the objective is to determine whether that page contains relevant information and, if so, whether the information complies with the specified SASB category and unit of measure. Each instance contains structured SASB metadata, extracted page text, and three prediction targets: \texttt{pred\_label}, \texttt{category\_match}, and \texttt{unit\_match}. The main label is \texttt{yes}, \texttt{yes but not complete}, or \texttt{no}; if the prediction is \texttt{no}, the auxiliary fields are normalized to \texttt{N/A}. Because only one page is available, the task requires fine-grained local evidence matching rather than full-report compliance analysis.
+
+The experiments use the non-Chinese subset of the task package, covering English, French, Japanese, Korean, and Thai. The retrieval and classifier training pool contains 753 labeled rows, and the evaluation set contains 793 rows. The training pool contains 295 \texttt{yes}, 127 \texttt{yes but not complete}, and 331 \texttt{no} rows, while the test set contains 315 \texttt{yes}, 138 \texttt{yes but not complete}, and 340 \texttt{no} rows.
+
+\subsection{Proposed Research Architecture}
+Figure~\ref{fig:architecture} shows the proposed research architecture of \SASBPageRAG{}. The workflow starts from training and development CSV files, SASB knowledge bases, and source PDFs. After preprocessing and evidence extraction, the system retrieves similar labeled cases, constructs a prompt with few-shot examples and JSON output constraints, applies LLM-based classification, and produces evaluation scores and prediction files.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{sasb_page_rag_architecture.png}
+\caption{Proposed research architecture of \SASBPageRAG{} for single-page SASB metric verification.}
+\label{fig:architecture}
+\end{figure*}
+
+\subsection{Retrieval-Augmented Few-Shot Verifier}
+\SASBPageRAG{} does not fine-tune the LLM. Instead, it treats the training CSV as a case library. For each test row, we build a retrieval document from the SASB topic, metric description, metric code, category, unit, key terms, \texttt{sasb\_what\_counts}, and the first 1,500 characters of extracted page text. A TF-IDF vectorizer with unigram and bigram features computes cosine similarity between the test row and all training rows~\cite{salton1988term}.
+
+The example selector retrieves three demonstrations. It first prioritizes rows with the same SASB metric code. Within that pool, it attempts to select the most similar example for each label: \texttt{yes}, \texttt{yes but not complete}, and \texttt{no}. If a label is missing for the same metric, the selector falls back to the global training pool. Remaining slots are filled by the most similar same-metric rows and then by the most similar global rows. This strategy is both similarity-based and label-balanced, reducing the chance that the prompt is dominated by the majority class.
+
+The verifier prompt contains a compact system instruction, the retrieved demonstrations with gold outputs, the metric-specific label prior, the target SASB metadata, and the extracted PDF page text. The LLM is instructed to judge only the given page, not the full ESG report, and to return compact JSON containing \texttt{pred\_label}, \texttt{category\_match}, \texttt{unit\_match}, short evidence, and a short reason. The prompt also states the boundary rules: relevant and complete disclosure is \texttt{yes}; partial, proxy-only, incomplete, or wrong-unit disclosure is \texttt{yes but not complete}; and semantically absent metric evidence is \texttt{no}.
+
+\subsection{Prompt Design}
+The implementation uses the same prompt structure for Gemini 2.5 Pro and GLM-5.2. The prompt is designed to make the model judge only the given page, calibrate its decision with retrieved examples, and return a valid task-format prediction. The following prompt template summarizes the main structure used in our system:
+
+\begin{quote}\small\itshape
+You are a SASB page-level verification assistant. Judge only the single PDF page provided. Return compact JSON only with the following fields:
+
+\texttt{\{"pred\_label": "yes|yes but not complete|no",}\\
+\texttt{"category\_match": "yes|no|N/A",}\\
+\texttt{"unit\_match": "yes|no|N/A",}\\
+\texttt{"evidence": "short page evidence",}\\
+\texttt{"reason": "short reason"\}}
+
+Rules:\\
+1. Predict \texttt{yes} if the page contains relevant disclosure for the requested SASB metric.\\
+2. Predict \texttt{yes but not complete} if the page is relevant but partial, proxy-only, incomplete, or wrong-unit.\\
+3. Predict \texttt{no} if the exact metric is not semantically disclosed.\\
+4. If \texttt{pred\_label} is \texttt{no}, set \texttt{category\_match} and \texttt{unit\_match} to \texttt{N/A}.\\
+5. Use the retrieved few-shot examples and metric label distribution only as calibration. The target page evidence decides.
+
+Retrieved few-shot examples:\\
+Example 1--3: task metadata, evidence snippet, similarity score, same-metric flag, and gold output.
+
+Now predict this test row:\\
+Task: language, company/report id, file stem, page, metric code, topic, metric description, SASB category, unit, key terms, and what-counts guidance.\\
+PDF page text: [extracted page text, truncated to 5,000 characters]\\
+Return JSON only.
+\end{quote}
+
+In the actual implementation, each retrieved example includes a page evidence snippet of up to 1,200 characters, its TF-IDF similarity score, whether it shares the same metric code as the target row, and the gold output. The prompt also includes the training label distribution for the same metric as a calibration prior. After generation, invalid or missing auxiliary labels are normalized by deterministic post-processing. For discussion-and-analysis metrics, relevant narrative evidence is treated as category- and unit-compatible, and zero-event or no-incident statements can satisfy event-count metrics when the metric asks for occurrences or counts.
+
+\subsection{Compared Systems}
+We evaluate two LLM configurations using the same retrieval and prompt design. The first uses Gemini 2.5 Pro because the Gemini 2.5 model family is designed for advanced reasoning, multimodality, and long-context processing~\cite{gemini2025gemini25}. These capabilities are relevant to fine-grained page-level verification, where the model must compare local report evidence with a structured metric definition. The second uses GLM-5.2 through the GLM API as an alternative commercial LLM from the GLM family. Public GLM-family reports emphasize strong instruction following, long-context ability, and multilingual pretraining~\cite{zeng2024chatglm}. Both systems receive the same structured task fields, PDF page text, and three few-shot examples.
+
+As a lightweight \openSource{} baseline, we train a MiniLM embedding classifier. MiniLM is suitable for this baseline because it compresses Transformer representations through self-attention distillation and is designed for efficient inference~\cite{wang2020minilm}. We encode the same SASB-page text representation with \texttt{paraphrase-\allowbreak multilingual-\allowbreak MiniLM-\allowbreak L12-\allowbreak v2}, a multilingual sentence-embedding model related to Sentence-BERT and multilingual knowledge distillation~\cite{reimers2019sentencebert,reimers2020multilingual}. A logistic regression classifier with balanced class weights predicts the three \texttt{pred\_label} classes; we use it as a transparent linear classification baseline implemented with scikit-learn~\cite{pedregosa2011scikit}. Auxiliary \texttt{category\_match} and \texttt{unit\_match} fields are derived deterministically from the predicted label for scoring-format compatibility. This baseline is fast and reproducible, but it cannot explicitly reason about completeness, units, or page-level disclosure boundaries.
+
+\subsection{Evaluation Metrics}
+We use Micro F1 and Macro F1 as the main evaluation metrics. Micro F1 aggregates true positives, false positives, and false negatives across all instances before computing the F1 score. It therefore reflects the overall classification performance on the evaluation set. Macro F1 computes the F1 score separately for each class and then averages the class scores. This metric is important for this task because \texttt{yes but not complete} is less frequent than \texttt{yes} and \texttt{no}, but it is central to compliance verification. Reporting both metrics allows us to evaluate both overall correctness and class-balanced performance.
+
+\section{Experiments}
+\subsection{Overall Results}
+Table~\ref{tab:overall} reports the overall results. Gemini 2.5 Pro achieves the best score, with 0.6507 Micro F1 and 0.6140 Macro F1. GLM-5.2 is close, with 0.6280 Micro F1 and 0.5963 Macro F1. MiniLM with logistic regression is much faster but substantially weaker, with 0.4603 Micro F1 and 0.4489 Macro F1. These results indicate that retrieval-conditioned LLM verification adds meaningful value beyond multilingual semantic embeddings.
+
+\begin{table}[t]
+\caption{Overall Micro F1 and Macro F1 results on 793 non-Chinese test rows.}
+\label{tab:overall}
+\centering
+\begin{tabular}{lrr}
+\toprule
+System & Micro F1 & Macro F1 \\
+\midrule
+Gemini 2.5 Pro RAG & \textbf{0.6507} & \textbf{0.6140} \\
+GLM-5.2 RAG & 0.6280 & 0.5963 \\
+MiniLM + LR & 0.4603 & 0.4489 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Class-Level Results}
+Table~\ref{tab:class} shows class-level F1. The \texttt{no} class is strongest for both LLM systems, while \texttt{yes but not complete} remains the weakest class. Gemini reaches 0.4835 F1 on \texttt{yes but not complete}; GLM-5.2 reaches 0.4717; MiniLM reaches 0.3931. GLM-5.2 has higher recall on the partial class, but lower precision, suggesting that it more often uses the partial label as a cautious middle state. Gemini is more conservative on partial predictions and obtains better overall balance.
+
+\begin{table}[t]
+\caption{Per-class F1 scores for the three prediction labels on the non-Chinese test set.}
+\label{tab:class}
+\centering
+\begin{tabular}{lrrr}
+\toprule
+System & yes & ybnc & no \\
+\midrule
+Gemini 2.5 Pro RAG & \textbf{0.6327} & \textbf{0.4835} & \textbf{0.7258} \\
+GLM-5.2 RAG & 0.5919 & 0.4717 & 0.7250 \\
+MiniLM + LR & 0.5133 & 0.3925 & 0.4411 \\
+\bottomrule
+\end{tabular}
+\begin{flushleft}
+\small Note: ybnc = \texttt{yes but not complete}.
+\end{flushleft}
+\end{table}
+
+\subsection{Language-Level Results}
+Language-level results are shown in Table~\ref{tab:lang}. Gemini is strongest on French, Japanese, Korean, and ties GLM-5.2 on Thai Micro F1. GLM-5.2 obtains the highest English Macro F1, while MiniLM is consistently below the two LLM systems, with the largest gap on Thai.
+
+\begin{table}[!t]
+\caption{Language-level Micro F1 and Macro F1 results for each evaluated non-Chinese language.}
+\label{tab:lang}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llrrrrr}
+\toprule
+System & Metric & English & French & Japanese & Korean & Thai \\
+\midrule
+Gemini 2.5 Pro RAG & Micro F1 & 0.5473 & \textbf{0.6771} & \textbf{0.7231} & \textbf{0.7718} & \textbf{0.5537} \\
+ & Macro F1 & 0.4833 & \textbf{0.6382} & \textbf{0.6801} & \textbf{0.7467} & 0.5129 \\
+GLM-5.2 RAG & Micro F1 & \textbf{0.5473} & 0.6406 & 0.6538 & 0.7584 & \textbf{0.5537} \\
+ & Macro F1 & \textbf{0.5090} & 0.5971 & 0.5996 & 0.7337 & \textbf{0.5180} \\
+MiniLM + LR & Micro F1 & 0.4726 & 0.5104 & 0.4846 & 0.4430 & 0.3554 \\
+ & Macro F1 & 0.4550 & 0.4548 & 0.4767 & 0.4388 & 0.3100 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\subsection{Cross-Submission Comparison}
+Table~\ref{tab:reported-comparison} contextualizes our strongest result with the independently reported Subtask 2 results from Cierpa and CSCU. Cierpa reports an overall Macro F1 of 0.637 for its best metric-aware few-shot configuration across six languages~\cite{endo2026cierpa}. CSCU reports 0.624 Macro F1 and 67.9\% accuracy for text-plus-image verification over 967 retained page records~\cite{boonsuriyatham2026cscu}. Our Gemini configuration reports 0.614 Macro F1 and 65.07\% Micro F1 over 793 non-Chinese rows.
+
+These values are close in magnitude but are not directly comparable. Our evaluation excludes Chinese, Cierpa applies a conflict-oriented cleaning procedure, and CSCU reports a retained 967-record set and excludes a documented source-alignment anomaly. The systems also differ in model, prompt, page modality, and example selection. Consequently, Table~\ref{tab:reported-comparison} is a comparison of reported experimental contexts rather than an official ranking or a paired significance test.
+
+\begin{table}[t]
+\caption{Independently reported best Subtask 2 results. Different row sets and protocols prevent direct ranking.}
+\label{tab:reported-comparison}
+\centering
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrl}
+\toprule
+System & Macro F1 & Acc./Micro F1 & Scope \\
+\midrule
+Cierpa Best FI & 0.637 & -- & Six languages, cleaned \\
+CSCU text+image & 0.624 & 0.679 & 967 retained rows \\
+\SASBPageRAG{} Gemini & 0.614 & 0.6507 & 793, no Chinese \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\subsection{Result Analysis}
+The main finding is that the task benefits from explicit LLM-based verification. MiniLM embeddings capture broad multilingual similarity, but the task requires more than semantic closeness. The model must decide whether a page satisfies a specific SASB metric, whether the disclosure is complete, and whether the unit is compatible. This explains why the embedding classifier often fails despite using the same training rows and PDF text.
+
+The comparison between Gemini 2.5 Pro and GLM-5.2 also illustrates that prompt-calibrated retrieval does not remove model-specific decision tendencies. GLM-5.2 predicts \texttt{yes but not complete} more frequently, which improves recall for partial disclosures but reduces precision. Gemini 2.5 Pro predicts \texttt{no} more often and obtains stronger overall F1 balance. In practical compliance screening, the preferred model may depend on whether the user values recall for partial disclosures or conservative final acceptance.
+
+The other submissions refine this interpretation. Cierpa's metric-prioritized few-shot configurations improve its overall Macro F1 from 0.621 for zero-shot inference to 0.634 in cross-validation, and its selected test configuration reaches 0.637. However, the effect is language-dependent: its reported Japanese Macro F1 decreases from 0.748 to 0.663 while Korean increases from 0.671 to 0.832. Thus, examples can calibrate a difficult boundary but can also anchor the verifier to inappropriate edge cases. This observation supports our use of same-metric examples while motivating a controlled comparison against zero-shot and random-example baselines.
+
+CSCU provides complementary evidence about input modality. Its text-only, image-only, and text-plus-image variants report Macro F1 scores of 0.559, 0.605, and 0.624, respectively. The improvement is consistent with our observation that extracted tables lose row and column structure. However, CSCU notes that the confidence intervals for image-only and text-plus-image overlap, so the incremental contribution of extracted text beyond the page image remains uncertain. Taken together, the submissions suggest that demonstration relevance and evidence fidelity address different failure sources: the former calibrates the decision boundary, whereas the latter determines whether the required value, unit, and scope are visible to the verifier.
+
+\subsection{Error Analysis}
+Errors remain concentrated around partial disclosure. A page may contain relevant ESG language but omit a required denominator, scope, disaggregation, event count, or unit. Conversely, a page may present a SASB index that names a metric but does not contain the underlying disclosure. Single-page evaluation makes these cases difficult because evidence may appear on neighboring pages. The current system also relies on extracted PDF text; tables or figures that are poorly extracted may be underused.
+
+The observed errors can be summarized into three common patterns. First, topical matches are sometimes confused with compliant disclosures: the page discusses the correct ESG issue but does not provide the metric-specific quantity, category, or unit. Second, partial disclosures are hard to separate from complete disclosures when the page provides proxy evidence, percentages without denominators, or qualitative descriptions without the required numerical detail. Third, extracted text from PDF tables may lose row or column structure, making it difficult for the verifier to connect a number with the correct SASB metric.
+
+These patterns recur across submissions. Cierpa reports that few-shot examples substantially improve the Korean partial class but reduce Japanese partial-label accuracy, indicating that the \texttt{yes but not complete} boundary is sensitive to demonstration choice. CSCU likewise identifies this label as the hardest class and attributes remaining errors to incomplete page evidence and confusion between full and partial disclosure. Its Subtask 1 analysis additionally shows that many retrieval errors fall on a page adjacent to the annotated page. Although our system receives the official target page and does not evaluate retrieval, this finding exposes a limitation of strict single-page verification: the verifier can be penalized for missing evidence that is structurally associated with the target disclosure but printed on a neighboring page.
+
+\section{Discussion}
+\subsection{Strengths and Weaknesses across Approaches}
+The three approaches occupy different points in the accuracy--complexity space. \SASBPageRAG{} is the simplest: it uses extracted text, a transparent TF-IDF case index, three demonstrations, and one verifier call. This makes the pipeline easy to inspect and comparatively inexpensive, and its reported Macro F1 remains close to the two multimodal submissions. Its central weakness is that lexical retrieval and flattened PDF text cannot preserve table geometry, visual grouping, or chart semantics.
+
+Cierpa offers the broadest retrieval design. Lexical, semantic, and visual rankings capture complementary signals, and VLM reranking raises its reported retrieval MRR from 0.497 without reranking to 0.584 with GPT-5.4-mini and 0.636 with GPT-5.5. The cost is a larger pipeline with multiple representations and model calls; Cierpa reports reranking costs of US\$11.0 and US\$62.1, respectively, for 615 test instances. Its few-shot study is particularly informative for our setting because it shows that metric alignment is useful overall but not uniformly beneficial across languages.
+
+CSCU contributes a strongly traceable design and an explicit modality comparison. Its results show that whole-page visual evidence can recover information lost by text extraction, while its retrieval results distinguish candidate-generation failures from verifier failures. A limitation is that its VLM-guided retrieval variant changes ToC checking, section selection, and final verification together; the reported improvement therefore measures a package of interventions rather than an isolated ablation. Its use of remote multimodal services also creates cost and model-drift concerns shared by other API-based systems.
+
+\subsection{Evaluation Scope and Validity}
+Macro F1 is more informative than accuracy alone because the partial class is less frequent and consistently difficult. Nevertheless, a single aggregate score hides material differences in language coverage, class distribution, evidence quality, and retained records. Cross-submission scores should therefore be accompanied by their evaluation scope, as in Table~\ref{tab:reported-comparison}, and should not be compared as if generated on an identical paired sample.
+
+The released reference data also complicate evaluation. Some identity tuples recur, and some repeated tuples have conflicting labels. An evaluator that joins rows only by a non-unique tuple can collapse instances and change the reported result. Reviewer-facing analysis should preserve row-level identity or introduce a unique sample identifier. Moreover, the available reference files do not provide independently validated gold labels for the predicted \texttt{category\_match} and \texttt{unit\_match} fields; these auxiliary outputs should not be scored by treating an answer-unit string as an equivalent categorical gold label.
+
+Finally, exact single-page evaluation is intentionally controlled but does not represent every real report. Tables may continue across pages, narrative definitions may precede a numerical table, and SASB index pages may point to rather than contain evidence. Future evaluation could complement exact-page labels with acceptable page sets, neighboring-page sensitivity, or short evidence-span annotations. These alternatives should supplement rather than silently replace the official protocol.
+
+\subsection{Implications for System Design}
+The comparison suggests a modular research direction. Metric-prioritized examples can improve decision calibration, while page images can improve evidence fidelity; neither substitutes for the other. A practical extension of \SASBPageRAG{} would preserve its lightweight text path for narrative pages and route table-heavy, scanned, or low-text pages to a multimodal verifier. A controlled ablation among zero-shot, random few-shot, TF-IDF few-shot, and metric-prioritized few-shot settings would then isolate the contribution of retrieval separately from the underlying LLM. Such experiments are preferable to attributing all gains to ``RAG'' when the model, prompt, sample scope, and evidence modality also differ.
+
+\subsection{Limitations}
+Our conclusions are subject to several limitations. First, our primary results cover 793 non-Chinese rows and therefore do not constitute a complete six-language evaluation. Second, Gemini 2.5 Pro and GLM-5.2 are remote models whose behavior and availability may change, while exact generation-level seeds and provider-side versions were not preserved. Third, our current comparison includes two LLMs and one embedding classifier but does not isolate the effect of retrieved demonstrations against zero-shot and random-example controls. Fourth, page evidence is extracted as text, so tables, figures, reading order, and scanned content may be degraded. Fifth, raw scores from the other submissions are contextual evidence rather than paired comparisons because their cleaning, retained samples, and modalities differ. Finally, our qualitative error taxonomy identifies plausible mechanisms but does not yet provide a fully annotated error sample with inter-annotator agreement.
+
+\section{Conclusions}
+This paper presented \SASBPageRAG{}, a \retraug{} few-shot verifier for multilingual single-page SASB metric verification. The main research contribution is a lightweight verification framework that combines TF-IDF case retrieval, label-balanced few-shot prompting, SASB metadata, and extracted page evidence without fine-tuning a language model. The experimental results show that retrieval-conditioned LLM verification is more effective than a MiniLM \logreg{} baseline for judging whether a single ESG report page satisfies a metric, category, and unit requirement.
+
+The comparative analysis clarifies that no single component resolves the task. Our experiments show the value of explicit LLM verification over embedding classification; Cierpa demonstrates the potential and language dependence of metric-prioritized examples; and CSCU demonstrates the value of visual page evidence. Across all three submissions, partial disclosure remains the central challenge, especially when relevant ESG language appears without the required quantity, denominator, scope, disaggregation, or unit. ESG compliance verification should therefore be studied as both a metric-level evidence-matching problem and a calibrated completeness decision, rather than only as document-level semantic classification.
+
+The practical implication is that a lightweight text path can handle many pages while costlier multimodal reasoning is reserved for low-text or table-heavy cases. Future work will first isolate zero-shot, random-example, and metric-prioritized retrieval effects; then add OCR and page-image evidence under a controlled modality ablation; and finally study neighboring-page context separately from the official single-page setting. Row-level identifiers, paired statistical tests, and explicit reporting of retained samples will also be important for reliable comparison.
+
+\section*{Resource Availability}
+The supplementary resources for this report, including the source code/GitHub repository, evaluation scripts, and model outputs/predictions, are available at:
+\url{https://drive.google.com/drive/folders/1z5DGv2I4TL9sw9BCBBohASZp3HHLj5Uo?usp=sharing}.
+
+\section*{Acknowledgment}
+This work was supported by the National Science and Technology Council, Taiwan, under grants NSTC 113-2425-H-305-003 and NSTC 114-2425-H-305-003; National Taipei University (NTPU), Taiwan and ATEC Group under grant NTPU-112A413E01; and National Taipei University (NTPU), Taiwan under grant 114-NTPU\_ORDA-F-004.
+
+% References: keep regcomagent_rag_refs.bib in the same directory as this tex file.
+\bibliographystyle{unsrt}
+\bibliography{regcomagent_rag_refs}
+
+\end{document}
