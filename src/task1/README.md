@@ -49,6 +49,10 @@ py src/task1/task1_pipeline.py rerank `
 
 The command above makes no API calls. Inspect prompts and candidate pages first.
 To execute, set `OPENAI_API_KEY` in `.env` and explicitly add `--execute-api`.
+The default API configuration uses `gpt-5.4-nano`, 96-DPI images, low image
+detail, and at most 900 output tokens to keep the pilot inexpensive. Use
+`--image-detail high`, a larger `--dpi`, or `gpt-5.4-mini` only for a measured
+quality comparison. The cache makes reruns free of duplicate API calls.
 Official OpenAI documentation confirms that the Responses API accepts image
 inputs and can generate text or JSON output:
 https://developers.openai.com/api/reference/cli/resources/responses/methods/create

@@ -441,8 +441,8 @@ def parse_jsonish(text: str) -> dict[str, Any]:
 
 def rerank_prompt(query: dict[str, Any], candidates: list[dict[str, Any]]) -> str:
     candidate_lines = "\n".join(
-        f"- candidate page {item['page']}; fused rank {item['rank']}; score {item['score']}"
-        for item in candidates
+        f"- {key}: PDF page index {item['page']}; fused rank {item['rank']}; score {item['score']}"
+        for key, item in ((f"C{index:02d}", item) for index, item in enumerate(candidates, 1))
     )
     return f"""You rerank candidate ESG report pages for one SASB metric.
 Judge only the supplied candidate page images. Do not infer evidence from the
@@ -456,21 +456,30 @@ Expected category: {query.get('sasb_category', '')}
 Expected unit: {query.get('sasb_unit_of_measure', '')}
 What counts: {query.get('sasb_what_counts', '')}
 
-Candidates, in the same order as the following images:
+Candidates (use these opaque candidate keys, not printed page numbers), in the
+same order as the following images:
 {candidate_lines}
 
 Required JSON shape:
 {{
   "ranked_pages": [
-    {{"page": 1, "relevance": 0.0, "evidence_type": "direct|partial|index_reference|topical_only|unrelated", "reason": "short grounded reason"}}
+    {{"candidate_key": "C01", "relevance": 0.0, "evidence_type": "direct|partial|index_reference|topical_only|unrelated"}}
   ],
   "no_relevant_page": false
 }}
+Return exactly one compact JSON object. Include all candidates, in ranked order.
+Return candidate_key values exactly as listed; never return a printed page number.
+Do not include a reason or any other fields.
 """
 
 
 def call_openai_vlm(
-    query: dict[str, Any], candidates: list[dict[str, Any]], model: str, dpi: int
+    query: dict[str, Any],
+    candidates: list[dict[str, Any]],
+    model: str,
+    dpi: int,
+    image_detail: str,
+    max_output_tokens: int,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     try:
         from openai import OpenAI
@@ -479,12 +488,21 @@ def call_openai_vlm(
     if not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("OPENAI_API_KEY is not set")
     content: list[dict[str, Any]] = [{"type": "input_text", "text": rerank_prompt(query, candidates)}]
-    for candidate in candidates:
+    for index, candidate in enumerate(candidates, 1):
+        # Bind the opaque PDF index to the image immediately before it. This
+        # prevents the model from returning a printed-page number read from
+        # the document instead of the candidate identifier used for scoring.
+        content.append(
+            {
+                "type": "input_text",
+                "text": f"Candidate key: C{index:02d}. PDF page index: {int(candidate['page'])}. The next image is this candidate.",
+            }
+        )
         content.append(
             {
                 "type": "input_image",
                 "image_url": render_page_data_url(Path(query["pdf_path"]), int(candidate["page"]), dpi),
-                "detail": "high",
+                "detail": image_detail,
             }
         )
     client = OpenAI()
@@ -492,7 +510,7 @@ def call_openai_vlm(
     response = client.responses.create(
         model=model,
         input=[{"role": "user", "content": content}],
-        max_output_tokens=1200,
+        max_output_tokens=max_output_tokens,
         store=False,
     )
     elapsed = time.perf_counter() - started
@@ -505,6 +523,44 @@ def call_openai_vlm(
         "usage": usage.model_dump() if usage and hasattr(usage, "model_dump") else {},
     }
     return parsed, metadata
+
+
+def normalize_vlm_ranking(
+    ranked: list[dict[str, Any]], candidates: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Keep only candidate IDs and append omitted candidates in fused order."""
+    candidate_pages = [int(item["page"]) for item in candidates]
+    key_to_page = {f"C{index:02d}": page for index, page in enumerate(candidate_pages, 1)}
+    allowed = set(candidate_pages)
+    normalized: list[dict[str, Any]] = []
+    seen: set[int] = set()
+    for item in ranked:
+        key = str(item.get("candidate_key", "")).upper()
+        if key in key_to_page:
+            page = key_to_page[key]
+        else:
+            try:
+                page = int(item["page"])
+            except (KeyError, TypeError, ValueError):
+                continue
+        if page not in allowed or page in seen:
+            continue
+        seen.add(page)
+        try:
+            relevance = float(item.get("relevance", 0.0))
+        except (TypeError, ValueError):
+            relevance = 0.0
+        normalized.append(
+            {
+                "page": page,
+                "relevance": relevance,
+                "evidence_type": str(item.get("evidence_type", "unrated")),
+            }
+        )
+    for page in candidate_pages:
+        if page not in seen:
+            normalized.append({"page": page, "relevance": -1.0, "evidence_type": "unrated"})
+    return normalized
 
 
 def command_rerank(args: argparse.Namespace) -> None:
@@ -532,18 +588,38 @@ def command_rerank(args: argparse.Namespace) -> None:
                     "prompt": rerank_prompt(row, candidates),
                 }
             else:
-                parsed, metadata = call_openai_vlm(row, candidates, args.model, args.dpi)
-                trace = {
-                    "sample_id": row["sample_id"],
-                    "status": "complete",
-                    "candidate_pages": [item["page"] for item in candidates],
-                    "prediction": parsed,
-                    **metadata,
-                }
-                assert cache_handle is not None
-                cache_handle.write(json.dumps(trace, ensure_ascii=False) + "\n")
-                cache_handle.flush()
-            ranked = trace.get("prediction", {}).get("ranked_pages", [])
+                try:
+                    parsed, metadata = call_openai_vlm(
+                        row,
+                        candidates,
+                        args.model,
+                        args.dpi,
+                        args.image_detail,
+                        args.max_output_tokens,
+                    )
+                    trace = {
+                        "sample_id": row["sample_id"],
+                        "status": "complete",
+                        "candidate_pages": [item["page"] for item in candidates],
+                        "prediction": parsed,
+                        **metadata,
+                    }
+                    assert cache_handle is not None
+                    cache_handle.write(json.dumps(trace, ensure_ascii=False) + "\n")
+                    cache_handle.flush()
+                except Exception as exc:
+                    # Keep a malformed/failed response from aborting a long run.
+                    # Do not cache failures: a later run should be able to retry.
+                    trace = {
+                        "sample_id": row["sample_id"],
+                        "status": "error",
+                        "model": args.model,
+                        "candidate_pages": [item["page"] for item in candidates],
+                        "error": f"{type(exc).__name__}: {exc}",
+                    }
+            ranked = normalize_vlm_ranking(
+                trace.get("prediction", {}).get("ranked_pages", []), candidates
+            )
             output_rows.append({**row, "vlm_trace": trace, "vlm_ranked": ranked})
             if position % 10 == 0 or position == len(rows):
                 print(f"reranked {position}/{len(rows)}")
@@ -600,9 +676,11 @@ def build_parser() -> argparse.ArgumentParser:
     rerank.add_argument("--output", type=Path, required=True)
     rerank.add_argument("--cache", type=Path, required=True)
     rerank.add_argument("--env-file", type=Path, default=Path(".env"))
-    rerank.add_argument("--model", default=os.getenv("OPENAI_VLM_MODEL", "gpt-5.4-mini"))
+    rerank.add_argument("--model", default=os.getenv("OPENAI_VLM_MODEL", "gpt-5.4-nano"))
     rerank.add_argument("--candidates", type=int, default=10)
-    rerank.add_argument("--dpi", type=int, default=120)
+    rerank.add_argument("--dpi", type=int, default=96)
+    rerank.add_argument("--image-detail", choices=["low", "high"], default="low")
+    rerank.add_argument("--max-output-tokens", type=int, default=900)
     rerank.add_argument("--execute-api", action="store_true")
     rerank.set_defaults(func=command_rerank)
     return parser

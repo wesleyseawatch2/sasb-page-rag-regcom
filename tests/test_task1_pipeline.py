@@ -11,6 +11,7 @@ from task1_pipeline import (  # noqa: E402
     parse_jsonish,
     reciprocal_rank,
     reciprocal_rank_fusion,
+    normalize_vlm_ranking,
     source_pdf_stem,
 )
 
@@ -36,6 +37,11 @@ class Task1PipelineTests(unittest.TestCase):
 
     def test_json_fence_is_accepted(self):
         self.assertEqual(parse_jsonish('```json\n{"no_relevant_page": true}\n```')["no_relevant_page"], True)
+
+    def test_vlm_ranking_maps_candidate_keys_and_removes_hallucinated_pages(self):
+        candidates = [{"page": 12}, {"page": 27}]
+        ranked = [{"candidate_key": "C02", "relevance": "0.8"}, {"page": 999}]
+        self.assertEqual([r["page"] for r in normalize_vlm_ranking(ranked, candidates)], [27, 12])
 
 
 if __name__ == "__main__":

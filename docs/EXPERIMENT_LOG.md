@@ -127,3 +127,21 @@ Copy this template for every reported run.
 - Runtime artifacts: `runs/task1-full/` (ignored because inputs are restricted)
 - Validity note: diagnostic only; empty-gold handling and official page-set
   scoring must be confirmed before making an official Task 1 claim
+
+## Completed pilot: cached VLM reranking (2026-08-31)
+
+- Status: complete
+- Scope: 4 non-empty-gold reconstructed queries per language, 24 total
+- Model/configuration: `gpt-5.4-nano`, Responses API, 10 candidates, 96-DPI
+  images, low image detail, maximum 900 output tokens
+- Cache: 6 earlier successful calls reused; 24 complete traces in the pilot
+- Token usage: 344,193 input + 7,199 output tokens
+- Estimated API cost: approximately USD 0.078 using the listed nano text-token
+  rates; image input is included in the reported input-token usage
+- Candidate recall@10: Chinese 1.00, English 0.75, French 0.75, Japanese
+  0.25, Korean 0.00, Thai 0.00
+- RRF baseline (same 24): Hit@1 0.083, Hit@5 0.292, Hit@10 0.458, MRR 0.200
+- VLM reranking (same 24): Hit@1 0.208, Hit@5 0.375, Hit@10 0.458, MRR 0.298
+- Interpretation: VLM improved Top-1 and MRR on this small sample, but cannot
+  recover pages absent from the local candidate set. Results are preliminary
+  and must not be reported as official Task 1 performance.
