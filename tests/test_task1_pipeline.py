@@ -9,6 +9,7 @@ sys.path.insert(0, str(ROOT / "src" / "task1"))
 from task1_pipeline import (  # noqa: E402
     build_candidate_pool,
     hit_at,
+    normalize_json_truth_row,
     parse_jsonish,
     reciprocal_rank,
     reciprocal_rank_fusion,
@@ -53,6 +54,29 @@ class Task1PipelineTests(unittest.TestCase):
         candidates = [{"page": 12}, {"page": 27}]
         ranked = [{"candidate_key": "C02", "relevance": "0.8"}, {"page": 999}]
         self.assertEqual([r["page"] for r in normalize_vlm_ranking(ranked, candidates)], [27, 12])
+
+    def test_language_json_schema_is_normalized(self):
+        row = normalize_json_truth_row(
+            {
+                "CID": "report.pdf",
+                "Topic": "Water Management",
+                "Metric": "Total water withdrawn",
+                "Code": "IF-WU-130a.1",
+                "Page": 17,
+                "Value": "12",
+                "Unit": "million m3",
+                "Complete": True,
+                "label": "yes but not complete",
+                "file_stem": "report_017",
+            },
+            "english",
+        )
+        self.assertEqual(row["lang"], "english")
+        self.assertEqual(row["metric_code"], "IF-WU-130a.1")
+        self.assertEqual(row["metric_description"], "Total water withdrawn")
+        self.assertEqual(row["page"], "17")
+        self.assertEqual(row["answer_unit"], "million m3")
+        self.assertEqual(row["label"], "yes but not complete")
 
 
 if __name__ == "__main__":

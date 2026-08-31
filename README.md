@@ -37,7 +37,8 @@ docs/EXPERIMENT_LOG.md   Reproducible run-record template
 The implemented first baseline combines PDF parsing, reusable word/character
 TF-IDF retrieval, metric/unit rules, optional multilingual dense retrieval,
 reciprocal-rank fusion, a lane-union candidate pool, cached VLM reranking,
-evaluation, and Task 2 export. See
+evaluation, and Task 2 export. It can read the normalized CSV or the original
+participant `*_test.json` files directly. See
 [src/task1/README.md](src/task1/README.md) for commands and
 [docs/TASK1_VLM_PLAN.md](docs/TASK1_VLM_PLAN.md) for the remaining ablations.
 
@@ -94,6 +95,6 @@ bibliography.
 - Subtask 2 preserved experiments: complete
 - Cross-submission comparative analysis: complete
 - Task 1 local retrieval/evaluation and VLM interface: implemented
-- Task 1 API VLM experiment: ready, intentionally opt-in and not yet executed
+- Task 1 API VLM pilot: executed on small non-Chinese samples; full API run remains opt-in
 - Task 1 official reproduction: pending confirmation of official inputs, gold
   page sets, PDF mapping, and evaluation rules

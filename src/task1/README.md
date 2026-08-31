@@ -13,6 +13,14 @@
 The reconstructed query set is an analysis dataset, not a claim that the
 official Task 1 data contract has been recovered exactly.
 
+`prepare --truth` accepts the normalized `test_truth.csv`, one language
+`*_test.json`, or a directory containing the six participant Test Set JSONs.
+The JSON loader preserves page-level `label` values (including `yes but not
+complete`) for auditing. The participant JSONs do not contain all of the
+enriched `sasb_key_terms` and `sasb_what_counts` fields used by the optimized
+CSV diagnostic, so direct-JSON retrieval numbers should be reported separately
+from the metadata-enriched CSV run.
+
 ## Smoke run
 
 ```powershell
@@ -83,6 +91,10 @@ was 5/6, but VLM reranking reached only Hit@1 0.167, Hit@5 0.333, Hit@10
 0.500, and MRR 0.261 (estimated cost USD 0.056). The original 10-image pilot
 was stronger, so treat the larger pool as an optional candidate-recall study,
 not the default VLM configuration.
+
+For inexpensive VLM pilots, `rerank` also supports `--languages` and
+`--max-per-language`; these options only limit a run and do not change the
+ranking algorithm.
 Official OpenAI documentation confirms that the Responses API accepts image
 inputs and can generate text or JSON output:
 https://developers.openai.com/api/reference/cli/resources/responses/methods/create

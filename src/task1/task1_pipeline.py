@@ -40,6 +40,109 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def _first_json_value(row: dict[str, Any], *names: str) -> str:
+    """Return the first non-empty value among schema aliases."""
+    for name in names:
+        value = row.get(name)
+        if value is not None and compact(value):
+            return str(value)
+    return ""
+
+
+def normalize_json_truth_row(row: dict[str, Any], language: str = "") -> dict[str, str]:
+    """Normalize the participant JSON schemas to the pipeline CSV schema.
+
+    The six language files use slightly different field names and, in a few
+    cases, contain both original and normalized spellings.  Keeping this
+    conversion here lets us audit the downloaded Test Set directly instead of
+    relying on a separately generated CSV.
+    """
+    lang = _first_json_value(row, "lang", "language") or language
+    metric_code = _first_json_value(row, "metric_code", "code", "Code")
+    if not metric_code:
+        # Korean rows use the SASB metric description as ``sid``; Chinese
+        # rows use a numeric sid and do not expose a metric code in the JSON.
+        sid = _first_json_value(row, "sid", "SID")
+        if re.search(r"[A-Za-z]", sid):
+            metric_code = sid
+    return {
+        "lang": lang.lower(),
+        "cid": _first_json_value(row, "cid", "CID"),
+        "sid": _first_json_value(row, "sid", "SID"),
+        "topic": _first_json_value(row, "topic", "Topic"),
+        "metric_description": _first_json_value(
+            row, "metric_description", "metric", "Metric"
+        ),
+        "metric_code": metric_code,
+        "page": _first_json_value(
+            row,
+            "page",
+            "Page",
+            "pdf_page",
+            "PDF_Page",
+            "file_page_number",
+            "document_page_number",
+        ),
+        "file_stem": _first_json_value(row, "file_stem", "file stem"),
+        "label": _first_json_value(row, "label", "Label"),
+        "answer_value": _first_json_value(
+            row,
+            "answer_value",
+            "value",
+            "Value",
+            "confirmed value",
+            "Confirmed value",
+            "confirmed_value",
+        ),
+        "answer_unit": _first_json_value(
+            row,
+            "answer_unit",
+            "unit",
+            "Unit",
+            "confirmed unit",
+            "Confirmed Unit",
+            "confirmed_unit",
+        ),
+        "complete": _first_json_value(row, "complete", "Complete"),
+        "sasb_category": _first_json_value(
+            row, "sasb_category", "SASB Category", "category", "Category"
+        ),
+        "sasb_unit_of_measure": _first_json_value(
+            row,
+            "sasb_unit_of_measure",
+            "sasb unit of measurement",
+            "SASB Unit of Measurement",
+        ),
+        "sasb_key_terms": _first_json_value(row, "sasb_key_terms", "SASB Key Terms"),
+        "sasb_what_counts": _first_json_value(
+            row, "sasb_what_counts", "SASB What Counts"
+        ),
+    }
+
+
+def read_json_truth(path: Path, language: str = "") -> list[dict[str, str]]:
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    if not isinstance(payload, list):
+        raise ValueError(f"Expected a JSON list in {path}")
+    inferred_language = language or path.stem.removesuffix("_test").lower()
+    return [normalize_json_truth_row(row, inferred_language) for row in payload]
+
+
+def read_truth(path: Path) -> list[dict[str, str]]:
+    """Read CSV truth or a directory/file of language-specific Test JSONs."""
+    if path.is_dir():
+        files = sorted(path.glob("*_test.json"))
+        if not files:
+            raise FileNotFoundError(f"No *_test.json files found under {path}")
+        rows: list[dict[str, str]] = []
+        for file in files:
+            rows.extend(read_json_truth(file))
+        return rows
+    if path.suffix.lower() == ".json":
+        return read_json_truth(path)
+    return read_csv(path)
+
+
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if not rows:
@@ -211,7 +314,7 @@ def index_pdf(pdf_path: Path, lang: str, report_stem: str) -> list[dict[str, Any
 
 
 def command_prepare(args: argparse.Namespace) -> None:
-    truth = read_csv(args.truth)
+    truth = read_truth(args.truth)
     include_answer_variant = args.query_group == "answer_variant"
     queries = build_queries(truth, args.pdf_root, include_answer_variant)
     if args.max_queries:
@@ -746,6 +849,19 @@ def normalize_vlm_ranking(
 def command_rerank(args: argparse.Namespace) -> None:
     load_dotenv(args.env_file)
     rows = read_jsonl(args.retrieval)
+    if args.languages:
+        allowed = {language.lower() for language in args.languages}
+        rows = [row for row in rows if str(row.get("lang", "")).lower() in allowed]
+    if args.max_per_language:
+        kept: list[dict[str, Any]] = []
+        counts: dict[str, int] = defaultdict(int)
+        for row in rows:
+            language = str(row.get("lang", "")).lower()
+            if counts[language] >= args.max_per_language:
+                continue
+            kept.append(row)
+            counts[language] += 1
+        rows = kept
     completed: dict[str, dict[str, Any]] = {}
     if args.cache.exists():
         completed = {row["sample_id"]: row for row in read_jsonl(args.cache) if row.get("sample_id")}
@@ -814,7 +930,12 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     prepare = sub.add_parser("prepare", help="Reconstruct queries and index full PDFs")
-    prepare.add_argument("--truth", type=Path, required=True)
+    prepare.add_argument(
+        "--truth",
+        type=Path,
+        required=True,
+        help="CSV truth, one Test JSON, or a directory containing *_test.json files.",
+    )
     prepare.add_argument("--pdf-root", type=Path, required=True)
     prepare.add_argument("--queries-out", type=Path, required=True)
     prepare.add_argument("--pages-out", type=Path, required=True)
@@ -888,6 +1009,18 @@ def build_parser() -> argparse.ArgumentParser:
     rerank.add_argument("--dpi", type=int, default=96)
     rerank.add_argument("--image-detail", choices=["low", "high"], default="low")
     rerank.add_argument("--max-output-tokens", type=int, default=900)
+    rerank.add_argument(
+        "--languages",
+        nargs="+",
+        default=[],
+        help="Optional language allow-list for pilot runs (e.g. english thai).",
+    )
+    rerank.add_argument(
+        "--max-per-language",
+        type=int,
+        default=0,
+        help="Optional cap per language after filtering; 0 means no cap.",
+    )
     rerank.add_argument(
         "--ranking-field", choices=["fused", "candidate_pool"], default="fused"
     )

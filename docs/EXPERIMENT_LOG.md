@@ -179,3 +179,25 @@ Copy this template for every reported run.
 - Interpretation: increasing candidate recall to 30 pages did not improve the
   small VLM's ranking. Keep 30-page pools opt-in; use a stronger second-stage
   model, smaller batches, or local prefiltering before any larger API run.
+
+## Participant JSON source audit and pilot (2026-09-01)
+
+- Status: complete
+- Source: the six downloaded `*_test.json` files in the participant Test Set;
+  their SHA-256 hashes match the local copies under `data/test/`
+- Page-level records: 982 total (Chinese 189, English 201, French 192,
+  Japanese 130, Korean 149, Thai 121)
+- Labels present: `yes`, `yes but not complete`, and `no`; both positive labels
+  are treated as relevant pages by the pipeline
+- Report-metric reconstruction: 490 queries / 63 reports / 7,179 pages;
+  369 non-empty and 121 empty gold query groups; missing PDFs 0
+- Non-Chinese report-metric subset: 363 query groups, 284 non-empty and 79
+  empty groups
+- Interpretation: an empty group is not automatically a missing annotation.
+  The participant README defines `no` as a sampled negative page instance.
+  Direct JSON input lacks some metadata-enriched SASB fields, so its retrieval
+  scores are kept separate from the CSV diagnostic.
+- VLM pilot: one query per non-Chinese language, 5 calls, 10 candidates,
+  `gpt-5.4-nano`, 96-DPI low-detail images; 3 non-empty cases evaluated with
+  Hit@1 0.333, Hit@5 1.000, Hit@10 1.000, MRR 0.583. This is a feasibility
+  check, not an official Task 1 score.
