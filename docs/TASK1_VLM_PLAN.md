@@ -33,12 +33,12 @@ Full PDF + SASB query
   -> OCR/table fallback and quality metadata
   -> ToC detection and section grounding
   -> parallel candidate generators
-       BM25 lexical retrieval
+       BM25/word + character lexical retrieval
        multilingual dense retrieval
        metric-code and unit/table matching
        optional visual page embeddings
   -> reciprocal-rank fusion
-  -> candidate expansion with adjacent pages
+  -> lane-union candidate pool and adjacent-page expansion
   -> VLM reranking of Top-10 candidates
   -> Top-1 and Top-3 evidence sets
   -> structured evidence extraction
@@ -319,4 +319,3 @@ Task 1 is complete only when:
 - error analysis and cost/latency are reported;
 - public artifacts exclude restricted PDFs and secrets;
 - the paper distinguishes official, anomaly-filtered, and diagnostic results.
-

@@ -4,9 +4,11 @@
 
 - reconstruct report-level queries and positive page sets from page-level truth;
 - index complete PDF reports with PyMuPDF;
-- run TF-IDF, metric/unit rules, optional dense retrieval, and RRF;
+- run reusable word/character TF-IDF, metric/unit rules, optional dense
+  retrieval, and RRF;
 - evaluate Hit@1/5/10, Near@1, and MRR;
-- prepare or execute cached Top-10 OpenAI VLM reranking.
+- prepare or execute cached OpenAI VLM reranking;
+- optionally export a lane-union `candidate_pool` for a larger VLM budget.
 
 The reconstructed query set is an analysis dataset, not a claim that the
 official Task 1 data contract has been recovered exactly.
@@ -53,6 +55,34 @@ The default API configuration uses `gpt-5.4-nano`, 96-DPI images, low image
 detail, and at most 900 output tokens to keep the pilot inexpensive. Use
 `--image-detail high`, a larger `--dpi`, or `gpt-5.4-mini` only for a measured
 quality comparison. The cache makes reruns free of duplicate API calls.
+
+## Recommended local retrieval configuration
+
+For the full diagnostic, use the default `report_metric` grouping and keep the
+original query text while enabling the low-weight character lane:
+
+```powershell
+py src/task1/task1_pipeline.py retrieve `
+  --queries runs/task1-full/queries.jsonl `
+  --pages runs/task1-full/pages.jsonl `
+  --output runs/task1-full/retrieval-optimized.jsonl `
+  --query-text-mode raw `
+  --char-weight 0.02 `
+  --top-k 30 `
+  --candidate-pool-k 30
+```
+
+`candidate_pool` interleaves the strongest pages from each retrieval lane. Set
+`--ranking-field candidate_pool --candidates 30` in `rerank` only after checking
+the extra image-token cost. Dense retrieval is optional and CPU-intensive; its
+page embeddings are truncated to 1,500 characters and cached under
+`cache/task1-dense/`.
+
+The 6-query `candidate_pool` pilot sent 30 images per query. Candidate recall
+was 5/6, but VLM reranking reached only Hit@1 0.167, Hit@5 0.333, Hit@10
+0.500, and MRR 0.261 (estimated cost USD 0.056). The original 10-image pilot
+was stronger, so treat the larger pool as an optional candidate-recall study,
+not the default VLM configuration.
 Official OpenAI documentation confirms that the Responses API accepts image
 inputs and can generate text or JSON output:
 https://developers.openai.com/api/reference/cli/resources/responses/methods/create

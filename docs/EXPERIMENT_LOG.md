@@ -146,3 +146,36 @@ Copy this template for every reported run.
 - Interpretation: VLM improved Top-1 and MRR on this small sample, but cannot
   recover pages absent from the local candidate set. Results are preliminary
   and must not be reported as official Task 1 performance.
+
+## Retrieval optimization diagnostic (2026-08-31)
+
+- Same 621-query reconstructed set as the original local baseline
+- Query grouping: `report_metric` (answer-value/unit variants merged)
+- Indexing: reusable per-report word TF-IDF; original query text retained
+- Additional lane: character TF-IDF (`char` 2--5 grams), evaluated as a
+  low-weight RRF lane and as a lane-union candidate pool
+- Cached-word + rules baseline: Hit@1 0.151, Hit@5 0.389, Hit@10 0.520,
+  MRR 0.263 (original baseline: 0.151 / 0.383 / 0.514 / 0.254)
+- Top-30 fused candidate recall: 0.662
+- Top-30 union of word/character/rule lane candidates: 0.718
+- Dense MiniLM: implemented with one model load, 1,500-character page inputs,
+  and `.npy` cache; not used for the reported numbers because CPU execution
+  was too slow for an efficient local run
+- Interpretation: indexing and query preservation give a small, reproducible
+  gain; candidate-pool union is more promising for VLM recall than equal-weight
+  character fusion. These remain diagnostic, not official Task 1 results.
+
+## Candidate-pool VLM pilot (2026-08-31)
+
+- Scope: one non-empty-gold query per language, 6 total
+- Candidate source: interleaved word/character/rule lane union, 30 images/query
+- Candidate recall: 5/6 (Thai gold page remained outside the pool)
+- VLM: `gpt-5.4-nano`, low detail, 96 DPI, 1,500 output-token retry for one
+  truncated Thai response
+- Hit@1/5/10: 0.167 / 0.333 / 0.500; MRR 0.261
+- Token usage: 253,264 input + 4,251 output; estimated cost USD 0.056
+- Comparison: the earlier 10-image pilot reached 0.333 / 0.333 / 0.500 and
+  MRR 0.357 on the same six queries
+- Interpretation: increasing candidate recall to 30 pages did not improve the
+  small VLM's ranking. Keep 30-page pools opt-in; use a stronger second-stage
+  model, smaller batches, or local prefiltering before any larger API run.

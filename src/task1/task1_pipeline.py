@@ -11,6 +11,7 @@ import os
 import re
 import statistics
 import time
+import unicodedata
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
@@ -92,25 +93,28 @@ def find_pdf(pdf_root: Path, lang: str, stem: str) -> Path | None:
     return matches[0] if len(matches) == 1 else None
 
 
-def query_key(row: dict[str, str]) -> tuple[str, ...]:
+def query_key(row: dict[str, str], include_answer_variant: bool = True) -> tuple[str, ...]:
     # This reconstructs a report-level retrieval query from the page-level data.
     # It is an analysis key, not a claim about the unreleased official Task 1 key.
-    return (
+    key = (
         compact(row.get("lang", "")),
         compact(row.get("cid", "")),
         source_pdf_stem(row.get("file_stem", "")),
         compact(row.get("topic", "")),
         compact(row.get("metric_description", "")),
         compact(row.get("metric_code", "")),
-        compact(row.get("answer_value", "")),
-        compact(row.get("answer_unit", "")),
     )
+    if include_answer_variant:
+        return key + (compact(row.get("answer_value", "")), compact(row.get("answer_unit", "")))
+    return key + ("", "")
 
 
-def build_queries(rows: list[dict[str, str]], pdf_root: Path) -> list[dict[str, Any]]:
+def build_queries(
+    rows: list[dict[str, str]], pdf_root: Path, include_answer_variant: bool = True
+) -> list[dict[str, Any]]:
     groups: dict[tuple[str, ...], list[dict[str, str]]] = defaultdict(list)
     for row in rows:
-        groups[query_key(row)].append(row)
+        groups[query_key(row, include_answer_variant)].append(row)
 
     queries: list[dict[str, Any]] = []
     for key, members in groups.items():
@@ -118,6 +122,8 @@ def build_queries(rows: list[dict[str, str]], pdf_root: Path) -> list[dict[str, 
         lang, cid, report_stem, topic, metric, metric_code, value, unit = key
         pdf_path = find_pdf(pdf_root, lang, report_stem)
         labels = sorted({compact(row.get("label", "")).lower() for row in members})
+        answer_values = sorted({compact(row.get("answer_value", "")) for row in members if compact(row.get("answer_value", ""))})
+        answer_units = sorted({compact(row.get("answer_unit", "")) for row in members if compact(row.get("answer_unit", ""))})
         gold_pages = sorted(
             {
                 int(float(row["page"]))
@@ -147,8 +153,9 @@ def build_queries(rows: list[dict[str, str]], pdf_root: Path) -> list[dict[str, 
                 "topic": topic,
                 "metric_description": metric,
                 "metric_code": metric_code,
-                "expected_value": value,
-                "expected_unit": unit,
+                "expected_value": " | ".join(answer_values) if answer_values else value,
+                "expected_unit": " | ".join(answer_units) if answer_units else unit,
+                "answer_variants": [{"value": v, "unit": u} for v, u in sorted({(compact(row.get("answer_value", "")), compact(row.get("answer_unit", ""))) for row in members})],
                 "sasb_category": compact(first.get("sasb_category", "")),
                 "sasb_unit_of_measure": compact(first.get("sasb_unit_of_measure", "")),
                 "sasb_key_terms": compact(first.get("sasb_key_terms", "")),
@@ -205,7 +212,8 @@ def index_pdf(pdf_path: Path, lang: str, report_stem: str) -> list[dict[str, Any
 
 def command_prepare(args: argparse.Namespace) -> None:
     truth = read_csv(args.truth)
-    queries = build_queries(truth, args.pdf_root)
+    include_answer_variant = args.query_group == "answer_variant"
+    queries = build_queries(truth, args.pdf_root, include_answer_variant)
     if args.max_queries:
         queries = queries[: args.max_queries]
     write_jsonl(args.queries_out, queries)
@@ -222,11 +230,12 @@ def command_prepare(args: argparse.Namespace) -> None:
 
     page_label_groups: dict[tuple[str, ...], set[str]] = defaultdict(set)
     for row in truth:
-        page_label_groups[query_key(row) + (compact(row.get("page", "")),)].add(
+        page_label_groups[query_key(row, include_answer_variant) + (compact(row.get("page", "")),)].add(
             compact(row.get("label", "")).lower()
         )
     audit = {
         "source_truth": str(args.truth.resolve()),
+        "query_group": args.query_group,
         "queries": len(queries),
         "reports": len(reports),
         "pages": len(page_rows),
@@ -286,6 +295,45 @@ def reciprocal_rank_fusion(
     ]
 
 
+def build_candidate_pool(
+    rankings: dict[str, list[dict[str, Any]]],
+    fused: list[dict[str, Any]],
+    per_lane_k: int,
+) -> list[dict[str, Any]]:
+    """Union the strongest pages from each lane for downstream reranking."""
+    if per_lane_k <= 0:
+        return []
+    fused_by_page = {int(item["page"]): item for item in fused}
+    lane_ranks: dict[int, dict[str, int]] = defaultdict(dict)
+    for lane, rows in rankings.items():
+        for item in rows[:per_lane_k]:
+            lane_ranks[int(item["page"])][lane] = int(item["rank"])
+    # Interleave lanes so a downstream budget of (for example) 30 images sees
+    # lexical, character, rule, and dense candidates instead of only the first
+    # lane's consensus pages. The pool itself can be larger than that budget.
+    ordered: list[int] = []
+    seen: set[int] = set()
+    lane_items = list(rankings.items())
+    for rank_index in range(per_lane_k):
+        for _, rows in lane_items:
+            if rank_index >= len(rows):
+                continue
+            page = int(rows[rank_index]["page"])
+            if page not in seen:
+                ordered.append(page)
+                seen.add(page)
+    return [
+        {
+            "page": page,
+            "score": round(float(fused_by_page.get(page, {}).get("score", 0.0)), 10),
+            "rank": rank,
+            "lane_ranks": lane_ranks[page],
+            "in_fused": page in fused_by_page,
+        }
+        for rank, page in enumerate(ordered, 1)
+    ]
+
+
 def dense_scores(query_text: str, texts: list[str], model_name: str) -> np.ndarray | None:
     if not model_name or model_name.lower() == "none":
         return None
@@ -298,36 +346,154 @@ def dense_scores(query_text: str, texts: list[str], model_name: str) -> np.ndarr
     return np.asarray(embeddings[1:]) @ np.asarray(embeddings[0])
 
 
+def load_dense_model(model_name: str) -> Any | None:
+    if not model_name or model_name.lower() == "none":
+        return None
+    try:
+        from sentence_transformers import SentenceTransformer
+    except ImportError as exc:
+        raise RuntimeError("Install sentence-transformers for dense retrieval") from exc
+    return SentenceTransformer(model_name)
+
+
+def weighted_query_text(query: dict[str, Any]) -> str:
+    """Prioritize metric identity over long explanatory metadata."""
+    weighted_fields = (
+        ("metric_code", 4),
+        ("metric_description", 3),
+        ("topic", 2),
+        ("sasb_key_terms", 2),
+        ("sasb_unit_of_measure", 1),
+        ("sasb_category", 1),
+    )
+    parts: list[str] = []
+    for field, weight in weighted_fields:
+        value = compact(query.get(field, ""))
+        if value:
+            parts.extend([value] * weight)
+    return " ".join(parts) or compact(query.get("query_text", ""))
+
+
+def build_lexical_index(
+    texts: list[str], max_features: int, char_max_features: int
+) -> dict[str, Any]:
+    """Fit reusable word and character indexes once per report."""
+    # Keep image-only or broken-text reports in the index. The sentinel gets
+    # no overlap with normal queries, while avoiding sklearn's empty-vocabulary
+    # exception and preserving those pages for later OCR/VLM handling.
+    safe_texts = [text if text.strip() else "__empty_page__" for text in texts]
+    word_vectorizer = TfidfVectorizer(
+        ngram_range=(1, 2), sublinear_tf=True, max_features=max_features
+    )
+    word_matrix = word_vectorizer.fit_transform(safe_texts)
+    char_vectorizer = TfidfVectorizer(
+        analyzer="char",
+        ngram_range=(2, 5),
+        sublinear_tf=True,
+        max_features=char_max_features,
+    )
+    char_matrix = char_vectorizer.fit_transform(safe_texts)
+    return {
+        "word_vectorizer": word_vectorizer,
+        "word_matrix": word_matrix,
+        "char_vectorizer": char_vectorizer,
+        "char_matrix": char_matrix,
+    }
+
+
 def command_retrieve(args: argparse.Namespace) -> None:
     queries = read_jsonl(args.queries)
     all_pages = read_jsonl(args.pages)
-    pages_by_report: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    pages_by_report: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for page in all_pages:
-        pages_by_report[page["report_stem"]].append(page)
+        pages_by_report[(page["lang"], page["report_stem"])].append(page)
 
     outputs: list[dict[str, Any]] = []
+    lexical_cache: dict[tuple[str, str], dict[str, Any]] = {}
+    dense_model = load_dense_model(args.dense_model)
+    dense_current_key: tuple[str, str] | None = None
+    dense_current_embeddings: np.ndarray | None = None
+    dense_cache_dir = args.dense_cache_dir
     for position, query in enumerate(queries, 1):
-        pages = sorted(pages_by_report.get(query["report_stem"], []), key=lambda row: row["page"])
+        report_key = (query["lang"], query["report_stem"])
+        pages = sorted(pages_by_report.get(report_key, []), key=lambda row: row["page"])
         if not pages:
             outputs.append({**query, "error": "no_indexed_pages", "rankings": {}, "fused": []})
             continue
         texts = [page["text"][: args.page_char_limit] for page in pages]
-        query_text = query["query_text"]
-        vectorizer = TfidfVectorizer(
-            ngram_range=(1, 2), sublinear_tf=True, max_features=args.max_features
+        if report_key not in lexical_cache:
+            lexical_cache[report_key] = build_lexical_index(
+                texts, args.max_features, args.char_max_features
+            )
+        index = lexical_cache[report_key]
+        query_text = (
+            query.get("query_text", "")
+            if args.query_text_mode == "raw"
+            else weighted_query_text(query)
         )
-        matrix = vectorizer.fit_transform([query_text, *texts])
-        tfidf = cosine_similarity(matrix[0:1], matrix[1:]).ravel()
+        word_query = index["word_vectorizer"].transform([query_text])
+        tfidf = cosine_similarity(word_query, index["word_matrix"]).ravel()
+        char_query = index["char_vectorizer"].transform(
+            [unicodedata.normalize("NFKC", query_text).lower()]
+        )
+        char_tfidf = cosine_similarity(char_query, index["char_matrix"]).ravel()
         rule = np.asarray([unit_rule_score(query, text) for text in texts], dtype=float)
         rankings = {"tfidf": rankings_from_scores(tfidf, pages)}
+        rankings["char_tfidf"] = rankings_from_scores(char_tfidf, pages)
         rule_ranking = rankings_from_scores(rule, pages, positive_only=True)
         if rule_ranking:
             rankings["rules"] = rule_ranking
-        dense = dense_scores(query_text, texts, args.dense_model)
+        dense = None
+        if dense_model is not None:
+            if dense_current_key != report_key:
+                dense_current_key = report_key
+                dense_current_embeddings = None
+                dense_texts = [
+                    unicodedata.normalize("NFKC", text)[: args.dense_page_char_limit]
+                    for text in texts
+                ]
+                pdf_hash = str(pages[0].get("pdf_sha256", ""))[:12]
+                model_slug = re.sub(r"[^A-Za-z0-9_.-]+", "_", args.dense_model)
+                cache_name = re.sub(
+                    r"[^A-Za-z0-9_.-]+",
+                    "_",
+                    f"{model_slug}__{query['lang']}__{query['report_stem']}__{pdf_hash}",
+                )
+                cache_file = dense_cache_dir / f"{cache_name}__{args.dense_page_char_limit}.npy"
+                if cache_file.exists():
+                    loaded = np.load(cache_file)
+                    dense_current_embeddings = loaded if len(loaded) == len(texts) else None
+                if dense_current_embeddings is None:
+                    dense_current_embeddings = np.asarray(
+                        dense_model.encode(
+                            dense_texts,
+                            normalize_embeddings=True,
+                            show_progress_bar=False,
+                            batch_size=args.dense_batch_size,
+                        )
+                    )
+                    dense_cache_dir.mkdir(parents=True, exist_ok=True)
+                    np.save(cache_file, dense_current_embeddings)
+            query_embedding = np.asarray(
+                dense_model.encode(
+                    [query_text],
+                    normalize_embeddings=True,
+                    show_progress_bar=False,
+                    batch_size=1,
+                )[0]
+            )
+            assert dense_current_embeddings is not None
+            dense = dense_current_embeddings @ query_embedding
         if dense is not None:
             rankings["dense"] = rankings_from_scores(dense, pages)
-        weights = {"tfidf": args.tfidf_weight, "rules": args.rule_weight, "dense": args.dense_weight}
+        weights = {
+            "tfidf": args.tfidf_weight,
+            "char_tfidf": args.char_weight,
+            "rules": args.rule_weight,
+            "dense": args.dense_weight,
+        }
         fused = reciprocal_rank_fusion(rankings, weights, args.rrf_k)
+        candidate_pool = build_candidate_pool(rankings, fused, args.candidate_pool_k)
         outputs.append(
             {
                 **query,
@@ -336,9 +502,12 @@ def command_retrieve(args: argparse.Namespace) -> None:
                     "rrf_k": args.rrf_k,
                     "weights": weights,
                     "page_char_limit": args.page_char_limit,
+                    "char_max_features": args.char_max_features,
+                    "query_text_mode": args.query_text_mode,
                 },
                 "rankings": {lane: rows[: args.keep_rankings] for lane, rows in rankings.items()},
                 "fused": fused[: args.top_k],
+                "candidate_pool": candidate_pool,
             }
         )
         if position % 25 == 0 or position == len(queries):
@@ -587,7 +756,7 @@ def command_rerank(args: argparse.Namespace) -> None:
         cache_handle = args.cache.open("a", encoding="utf-8")
     try:
         for position, row in enumerate(rows, 1):
-            candidates = list(row.get("fused", []))[: args.candidates]
+            candidates = list(row.get(args.ranking_field, []))[: args.candidates]
             if row["sample_id"] in completed:
                 trace = completed[row["sample_id"]]
             elif not args.execute_api:
@@ -651,6 +820,12 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--pages-out", type=Path, required=True)
     prepare.add_argument("--audit-out", type=Path, required=True)
     prepare.add_argument("--max-queries", type=int, default=0)
+    prepare.add_argument(
+        "--query-group",
+        choices=["report_metric", "answer_variant"],
+        default="report_metric",
+        help="Group by report/metric (recommended) or preserve answer-value variants.",
+    )
     prepare.set_defaults(func=command_prepare)
 
     retrieve = sub.add_parser("retrieve", help="Run local retrieval and RRF")
@@ -658,26 +833,47 @@ def build_parser() -> argparse.ArgumentParser:
     retrieve.add_argument("--pages", type=Path, required=True)
     retrieve.add_argument("--output", type=Path, required=True)
     retrieve.add_argument("--dense-model", default="none")
+    retrieve.add_argument("--dense-batch-size", type=int, default=32)
+    retrieve.add_argument("--dense-page-char-limit", type=int, default=1500)
+    retrieve.add_argument("--dense-cache-dir", type=Path, default=Path("cache/task1-dense"))
     retrieve.add_argument("--tfidf-weight", type=float, default=1.0)
+    retrieve.add_argument("--char-weight", type=float, default=0.02)
     retrieve.add_argument("--dense-weight", type=float, default=1.0)
     retrieve.add_argument("--rule-weight", type=float, default=0.5)
     retrieve.add_argument("--rrf-k", type=int, default=60)
     retrieve.add_argument("--top-k", type=int, default=10)
+    retrieve.add_argument(
+        "--candidate-pool-k",
+        type=int,
+        default=0,
+        help="Union this many pages per lane for optional VLM reranking (0 disables).",
+    )
     retrieve.add_argument("--keep-rankings", type=int, default=20)
     retrieve.add_argument("--page-char-limit", type=int, default=6000)
     retrieve.add_argument("--max-features", type=int, default=50000)
+    retrieve.add_argument("--char-max-features", type=int, default=100000)
+    retrieve.add_argument(
+        "--query-text-mode",
+        choices=["raw", "weighted_fields"],
+        default="raw",
+        help="Use the original query string (recommended) or weighted fields.",
+    )
     retrieve.set_defaults(func=command_retrieve)
 
     evaluate = sub.add_parser("evaluate", help="Evaluate a ranking field")
     evaluate.add_argument("--predictions", type=Path, required=True)
-    evaluate.add_argument("--ranking-field", default="fused", choices=["fused", "vlm_ranked"])
+    evaluate.add_argument(
+        "--ranking-field", default="fused", choices=["fused", "candidate_pool", "vlm_ranked"]
+    )
     evaluate.add_argument("--metrics-out", type=Path, required=True)
     evaluate.add_argument("--per-query-out", type=Path, required=True)
     evaluate.set_defaults(func=command_evaluate)
 
     export = sub.add_parser("export-task2", help="Export Top-K pages for the existing Task 2 verifier")
     export.add_argument("--predictions", type=Path, required=True)
-    export.add_argument("--ranking-field", default="fused", choices=["fused", "vlm_ranked"])
+    export.add_argument(
+        "--ranking-field", default="fused", choices=["fused", "candidate_pool", "vlm_ranked"]
+    )
     export.add_argument("--evidence-pages", type=int, default=1)
     export.add_argument("--output", type=Path, required=True)
     export.set_defaults(func=command_export_task2)
@@ -692,6 +888,9 @@ def build_parser() -> argparse.ArgumentParser:
     rerank.add_argument("--dpi", type=int, default=96)
     rerank.add_argument("--image-detail", choices=["low", "high"], default="low")
     rerank.add_argument("--max-output-tokens", type=int, default=900)
+    rerank.add_argument(
+        "--ranking-field", choices=["fused", "candidate_pool"], default="fused"
+    )
     rerank.add_argument("--execute-api", action="store_true")
     rerank.set_defaults(func=command_rerank)
     return parser

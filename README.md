@@ -34,9 +34,10 @@ docs/EXPERIMENT_LOG.md   Reproducible run-record template
 
 ## Task 1 baseline
 
-The implemented first baseline combines PDF parsing, TF-IDF retrieval,
-metric/unit rules, optional multilingual dense retrieval, reciprocal-rank
-fusion, cached Top-10 VLM reranking, evaluation, and Task 2 export. See
+The implemented first baseline combines PDF parsing, reusable word/character
+TF-IDF retrieval, metric/unit rules, optional multilingual dense retrieval,
+reciprocal-rank fusion, a lane-union candidate pool, cached VLM reranking,
+evaluation, and Task 2 export. See
 [src/task1/README.md](src/task1/README.md) for commands and
 [docs/TASK1_VLM_PLAN.md](docs/TASK1_VLM_PLAN.md) for the remaining ablations.
 
@@ -45,6 +46,12 @@ On the reconstructed analysis set, the local TF-IDF + rule RRF baseline indexed
 sets, it obtained Hit@1 0.151, Hit@5 0.383, Hit@10 0.514, and MRR 0.254. These
 are diagnostic results reconstructed from Subtask 2 truth, not official Task 1
 scores. No paid VLM calls were used for these numbers.
+
+The optimized cached-word configuration with raw queries and a low-weight
+character lane reaches Hit@1 0.151, Hit@5 0.389, Hit@10 0.520, and MRR 0.263
+on the same reconstructed set. A lane-union Top-30 candidate pool reaches
+0.718 candidate recall, but should be passed to the VLM only with a measured
+image budget; the 30-page nano pilot did not improve reranking.
 
 ## Setup
 
