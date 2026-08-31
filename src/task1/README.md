@@ -62,6 +62,8 @@ https://developers.openai.com/api/reference/cli/resources/responses/methods/crea
 The 2026-08-26 local run produced 621 reconstructed queries across 63 reports
 and 7,179 pages. Evaluation excludes 156 empty-gold queries and uses 465
 non-empty-gold queries: Hit@1 0.151, Hit@5 0.383, Hit@10 0.514, Near@1 0.194,
-and MRR 0.254. There were 230 queries whose grouped page rows contained more
-than one label. Consequently, these values are a pipeline diagnostic and must
-not be presented as official Task 1 results.
+and MRR 0.254. There were 230 queries whose grouped page rows contained both
+positive and negative page labels; this is expected for page retrieval and is
+not by itself an annotation conflict. Only 3 query-page groups had two
+different labels. Consequently, these values are a pipeline diagnostic and
+must not be presented as official Task 1 results.

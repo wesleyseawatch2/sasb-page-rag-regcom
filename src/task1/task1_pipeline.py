@@ -156,7 +156,10 @@ def build_queries(rows: list[dict[str, str]], pdf_root: Path) -> list[dict[str, 
                 "query_text": query_text,
                 "gold_pages": gold_pages,
                 "gold_labels": labels,
-                "gold_conflict": len(labels) > 1,
+                # A query normally contains both relevant and irrelevant
+                # pages. Keep this as a mixed-page diagnostic, not an
+                # annotation-conflict claim.
+                "mixed_page_labels": len(labels) > 1,
                 "pdf_path": str(pdf_path.resolve()) if pdf_path else "",
                 "pdf_found": bool(pdf_path),
             }
@@ -217,6 +220,11 @@ def command_prepare(args: argparse.Namespace) -> None:
         page_rows.extend(index_pdf(path, lang, stem))
     write_jsonl(args.pages_out, page_rows)
 
+    page_label_groups: dict[tuple[str, ...], set[str]] = defaultdict(set)
+    for row in truth:
+        page_label_groups[query_key(row) + (compact(row.get("page", "")),)].add(
+            compact(row.get("label", "")).lower()
+        )
     audit = {
         "source_truth": str(args.truth.resolve()),
         "queries": len(queries),
@@ -224,7 +232,10 @@ def command_prepare(args: argparse.Namespace) -> None:
         "pages": len(page_rows),
         "missing_pdfs": sum(not row["pdf_found"] for row in queries),
         "empty_gold_queries": sum(not row["gold_pages"] for row in queries),
-        "conflicting_gold_queries": sum(row["gold_conflict"] for row in queries),
+        "mixed_page_label_queries": sum(row["mixed_page_labels"] for row in queries),
+        "same_page_label_conflict_groups": sum(
+            len(labels) > 1 for labels in page_label_groups.values()
+        ),
         "note": "Queries are reconstructed from Subtask 2 truth and are not asserted to be the official Task 1 release.",
     }
     args.audit_out.parent.mkdir(parents=True, exist_ok=True)

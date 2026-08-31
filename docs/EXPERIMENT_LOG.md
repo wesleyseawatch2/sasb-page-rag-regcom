@@ -117,7 +117,8 @@ Copy this template for every reported run.
 - Queries/reports/pages: 621 / 63 / 7,179
 - Missing PDFs: 0
 - Non-empty/empty reconstructed gold: 465 / 156
-- Conflicting grouped labels: 230 queries
+- Mixed positive/negative page labels: 230 queries (normal for page retrieval)
+- Same query-page label conflicts: 3 groups / 6 rows
 - Retrieval: page TF-IDF + positive metric/unit rules, weighted RRF (`k=60`)
 - Dense retrieval: disabled for this first reproducible local baseline
 - VLM: dry-run verified; no API calls or cost incurred
