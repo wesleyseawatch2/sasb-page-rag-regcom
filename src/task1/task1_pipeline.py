@@ -763,6 +763,7 @@ def call_openai_vlm(
     dpi: int,
     image_detail: str,
     max_output_tokens: int,
+    api_timeout: float,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     try:
         from openai import OpenAI
@@ -788,7 +789,7 @@ def call_openai_vlm(
                 "detail": image_detail,
             }
         )
-    client = OpenAI()
+    client = OpenAI(timeout=api_timeout)
     started = time.perf_counter()
     response = client.responses.create(
         model=model,
@@ -892,6 +893,7 @@ def command_rerank(args: argparse.Namespace) -> None:
                         args.dpi,
                         args.image_detail,
                         args.max_output_tokens,
+                        args.api_timeout,
                     )
                     trace = {
                         "sample_id": row["sample_id"],
@@ -1009,6 +1011,12 @@ def build_parser() -> argparse.ArgumentParser:
     rerank.add_argument("--dpi", type=int, default=96)
     rerank.add_argument("--image-detail", choices=["low", "high"], default="low")
     rerank.add_argument("--max-output-tokens", type=int, default=900)
+    rerank.add_argument(
+        "--api-timeout",
+        type=float,
+        default=90.0,
+        help="Per-request timeout in seconds; timed-out rows remain retryable.",
+    )
     rerank.add_argument(
         "--languages",
         nargs="+",

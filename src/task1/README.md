@@ -62,7 +62,8 @@ To execute, set `OPENAI_API_KEY` in `.env` and explicitly add `--execute-api`.
 The default API configuration uses `gpt-5.4-nano`, 96-DPI images, low image
 detail, and at most 900 output tokens to keep the pilot inexpensive. Use
 `--image-detail high`, a larger `--dpi`, or `gpt-5.4-mini` only for a measured
-quality comparison. The cache makes reruns free of duplicate API calls.
+quality comparison. The default per-request timeout is 90 seconds. The cache
+makes reruns free of duplicate API calls.
 
 ## Recommended local retrieval configuration
 
@@ -95,6 +96,9 @@ not the default VLM configuration.
 For inexpensive VLM pilots, `rerank` also supports `--languages` and
 `--max-per-language`; these options only limit a run and do not change the
 ranking algorithm.
+
+The full non-Chinese 10-candidate run completed on 363 report-metric groups;
+see `docs/EXPERIMENT_LOG.md` for the per-language results and API accounting.
 Official OpenAI documentation confirms that the Responses API accepts image
 inputs and can generate text or JSON output:
 https://developers.openai.com/api/reference/cli/resources/responses/methods/create

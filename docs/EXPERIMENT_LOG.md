@@ -201,3 +201,34 @@ Copy this template for every reported run.
   `gpt-5.4-nano`, 96-DPI low-detail images; 3 non-empty cases evaluated with
   Hit@1 0.333, Hit@5 1.000, Hit@10 1.000, MRR 0.583. This is a feasibility
   check, not an official Task 1 score.
+
+## Non-Chinese VLM reranking run (2026-09-01)
+
+- Status: complete
+- Scope: all 363 non-Chinese `report_metric` query groups (English 77,
+  French 64, Japanese 69, Korean 59, Thai 94); 284 groups had at least one
+  positive page and 79 groups contained only negative page instances
+- Retrieval input: metadata-enriched CSV diagnostic rankings, Top-10 fused
+  candidates per query
+- VLM: `gpt-5.4-nano-2026-03-17`, Responses API, 96-DPI images, low detail,
+  maximum 900 output tokens, one request per query, 90-second timeout
+- API completion: 363/363 complete traces; no error traces
+- Token usage: 4,748,861 input + 109,510 output tokens
+- Estimated API cost: approximately USD 1.09 using the configured nano rates
+- Latency: mean 10.36 seconds, p95 36.78 seconds, maximum 97.03 seconds
+- Fused retrieval baseline on the same 284 non-empty groups: Hit@1 0.211,
+  Hit@5 0.412, Hit@10 0.518, MRR 0.306
+- VLM reranking on the same groups: Hit@1 0.289, Hit@5 0.468, Hit@10 0.518,
+  Near@1 0.352, MRR 0.362
+- Absolute change versus fused baseline: +7.7 percentage points Hit@1,
+  +5.6 points Hit@5, unchanged Hit@10, and +0.056 MRR
+- Per-language VLM Hit@1/5/10 and MRR: English 0.562/0.797/0.906/0.663;
+  French 0.320/0.720/0.800/0.485; Japanese 0.127/0.182/0.200/0.143;
+  Korean 0.392/0.569/0.608/0.464; Thai 0.047/0.109/0.109/0.073
+- Empty-gold diagnostic: VLM returned `no_relevant_page=true` for 30/79
+  empty groups (0.380) and for 111/284 non-empty groups (0.391). Because the
+  official Task 1 meaning of these reconstructed groups is not confirmed, this
+  is reported as a diagnostic rather than a formal classification score.
+- Interpretation: VLM improves ordering within the retrieved Top-10 set,
+  especially Top-1 and MRR, but cannot recover pages absent from that set;
+  Japanese and Thai remain the main retrieval bottleneck.

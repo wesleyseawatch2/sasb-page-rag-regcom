@@ -54,6 +54,12 @@ on the same reconstructed set. A lane-union Top-30 candidate pool reaches
 0.718 candidate recall, but should be passed to the VLM only with a measured
 image budget; the 30-page nano pilot did not improve reranking.
 
+The completed non-Chinese VLM run used 363 report-metric groups and 10 fused
+candidate pages per query. On the 284 groups with positive pages, VLM
+reranking reached Hit@1 0.289, Hit@5 0.468, Hit@10 0.518, and MRR 0.362,
+versus 0.211/0.412/0.518/0.306 for the same fused baseline. These are still
+reconstructed diagnostics, not official Task 1 scores.
+
 ## Setup
 
 ```powershell
@@ -95,6 +101,6 @@ bibliography.
 - Subtask 2 preserved experiments: complete
 - Cross-submission comparative analysis: complete
 - Task 1 local retrieval/evaluation and VLM interface: implemented
-- Task 1 API VLM pilot: executed on small non-Chinese samples; full API run remains opt-in
+- Task 1 API VLM pilot and full non-Chinese run: complete; full official run remains pending
 - Task 1 official reproduction: pending confirmation of official inputs, gold
   page sets, PDF mapping, and evaluation rules
