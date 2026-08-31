@@ -232,3 +232,23 @@ Copy this template for every reported run.
 - Interpretation: VLM improves ordering within the retrieved Top-10 set,
   especially Top-1 and MRR, but cannot recover pages absent from that set;
   Japanese and Thai remain the main retrieval bottleneck.
+
+## Full VLM comparison/error analysis (2026-09-01)
+
+- Inputs: the metadata-enriched fused rankings and the completed Chinese and
+  non-Chinese VLM traces, aligned by `sample_id`
+- Overall reconstructed set: 490 query groups; 369 non-empty gold groups and
+  121 empty groups
+- Same non-empty groups, fused baseline vs VLM: Hit@1 0.192 -> 0.268,
+  Hit@5 0.396 -> 0.458, Hit@10 0.507 -> 0.507, MRR 0.291 -> 0.347
+- Top-1 transition categories: both correct 57, VLM improved 42, VLM
+  degraded 14, neither correct 74; 182 groups had no gold page in the fused
+  Top-10 candidate set
+- Candidate recall@10 by language: Chinese 0.471, English 0.906, French
+  0.800, Japanese 0.200, Korean 0.608, Thai 0.109
+- `no_relevant_page=true` diagnostic rate: empty groups 45/121 (0.372);
+  non-empty groups 142/369 (0.385). This is not treated as an official score
+  because the Task 1 query-level no-answer contract is not confirmed.
+- Reproducible analyzer: `src/task1/analyze_vlm.py`; it emits per-language
+  metrics, transition categories, candidate-recall flags, and per-query error
+  records without making API calls.

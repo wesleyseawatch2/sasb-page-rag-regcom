@@ -16,6 +16,7 @@ from task1_pipeline import (  # noqa: E402
     normalize_vlm_ranking,
     source_pdf_stem,
 )
+from analyze_vlm import summarize_rows  # noqa: E402
 
 
 class Task1PipelineTests(unittest.TestCase):
@@ -77,6 +78,32 @@ class Task1PipelineTests(unittest.TestCase):
         self.assertEqual(row["page"], "17")
         self.assertEqual(row["answer_unit"], "million m3")
         self.assertEqual(row["label"], "yes but not complete")
+
+    def test_vlm_comparison_categories(self):
+        baseline = [
+            {
+                "sample_id": "a",
+                "lang": "thai",
+                "gold_pages": [3],
+                "fused": [{"page": 4}, {"page": 3}],
+            },
+            {"sample_id": "b", "lang": "thai", "gold_pages": [], "fused": [{"page": 1}]},
+        ]
+        vlm = [
+            {
+                "sample_id": "a",
+                "vlm_ranked": [{"page": 3}],
+                "vlm_trace": {"prediction": {"no_relevant_page": False}},
+            },
+            {
+                "sample_id": "b",
+                "vlm_ranked": [{"page": 1}],
+                "vlm_trace": {"prediction": {"no_relevant_page": True}},
+            },
+        ]
+        summary = summarize_rows(baseline, vlm)
+        self.assertEqual(summary["categories"]["vlm_improved_top1"], 1)
+        self.assertEqual(summary["categories"]["empty_gold"], 1)
 
 
 if __name__ == "__main__":

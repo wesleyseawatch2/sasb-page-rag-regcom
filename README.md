@@ -25,6 +25,7 @@ submissions that use different retained rows, cleaning rules, or modalities.
 paper/                  Revised paper source, bibliography, figure, and PDF
 src/task2/              Text-based RAG and embedding baselines
 src/task1/              Full-PDF retrieval, evaluation, and VLM reranking
+                        (including cached-trace error analysis)
 src/orchestrator/       Preserved orchestrator source snapshots
 evaluation/             Evaluation utilities
 artifacts/metrics/      Selected metrics and stage-wise analysis tables
@@ -59,6 +60,10 @@ candidate pages per query. On the 284 groups with positive pages, VLM
 reranking reached Hit@1 0.289, Hit@5 0.468, Hit@10 0.518, and MRR 0.362,
 versus 0.211/0.412/0.518/0.306 for the same fused baseline. These are still
 reconstructed diagnostics, not official Task 1 scores.
+
+`src/task1/analyze_vlm.py` aligns the full Chinese and non-Chinese traces with
+the fused baseline and reports per-language candidate recall, Top-1 transitions,
+and no-answer diagnostics without making additional API calls.
 
 ## Setup
 
