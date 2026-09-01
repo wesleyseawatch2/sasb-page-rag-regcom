@@ -418,3 +418,24 @@ Copy this template for every reported run.
 - Status: implementation complete; the previous CPU pilot was stopped before
   completion and its incomplete metric file was removed. Final BGE numbers,
   elapsed time, and per-language analysis remain to be filled after the GPU run.
+
+## Exploratory multilingual E5-large smoke test (2026-09-01)
+
+- Purpose: test a stronger cached multilingual encoder while the OpenAI key was
+  unavailable. This is a smoke test, not a paper result and not an official
+  Subtask 1 evaluation.
+- Model: `intfloat/multilingual-e5-large` (1024-dimensional, CPU), with the
+  model-required `query:` and `passage:` prefixes. The shared A/B runner now
+  applies these prefixes automatically for E5-family models; BGE-M3 remains
+  prefix-free.
+- Scope/configuration: first six rows of the frozen reconstructed input, one
+  Chinese report (50 pages), 3,000-character page limit, max length 512,
+  word/character TF-IDF + metric/unit rules + E5 dense RRF, no reranker.
+- Result (5 non-empty groups): existing fused baseline Hit@1 0.200,
+  MRR 0.540; E5-fused Hit@1 0.400, MRR 0.700. Hit@5 and Hit@10 were 1.000 in
+  both settings. The sample is too small to support a general improvement
+  claim; the complete 490-group run must remain separate and held out.
+- Runtime: approximately 2.5 minutes on the current 16-thread CPU for the
+  one-report/50-page smoke test. A full 7,179-page CPU run is estimated in
+  hours and should wait for a CUDA machine or be treated as a low-priority
+  no-API ablation.

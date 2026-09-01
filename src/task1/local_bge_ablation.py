@@ -75,6 +75,21 @@ def short_hash(*parts: object) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:20]
 
 
+def embedding_text(model_name: str, text: object, role: str) -> str:
+    """Add the task prefix expected by instruction-tuned embedding models.
+
+    BGE-M3 is used without a prefix, while the multilingual E5 family was
+    trained with explicit ``query:``/``passage:`` prefixes.  Keeping this
+    normalization in one place lets the same A/B runner compare both models
+    without silently using the wrong E5 input format.
+    """
+    value = unicodedata.normalize("NFKC", str(text or "")).strip()
+    if "e5" in model_name.lower():
+        prefix = "query: " if role == "query" else "passage: "
+        return prefix + value
+    return value
+
+
 def configure_torch_threads(thread_count: int) -> None:
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
     try:
@@ -114,7 +129,7 @@ def _encode_embedding_shard(payload: dict[str, Any]) -> dict[str, Any]:
     for group in payload["groups"]:
         key = tuple(group["key"])
         pages = group["pages"]
-        texts = [unicodedata.normalize("NFKC", str(row.get("text", "")))[:page_limit] for row in pages]
+        texts = [embedding_text(payload["model_name"], str(row.get("text", ""))[:page_limit], "passage") for row in pages]
         digest = short_hash(payload["model_name"], *key, group.get("pdf_sha256", ""), page_limit, max_length)
         cache_file = cache_dir / f"{model_slug[:24]}__{digest}__{page_limit}__{max_length}.npy"
         if cache_file.exists():
@@ -139,7 +154,7 @@ def _encode_embedding_shard(payload: dict[str, Any]) -> dict[str, Any]:
         if query_texts:
             vectors = np.asarray(
                 model.encode(
-                    [item["text"] for item in query_texts],
+                    [embedding_text(payload["model_name"], item["text"], "query") for item in query_texts],
                     normalize_embeddings=True,
                     show_progress_bar=False,
                     batch_size=batch_size,
