@@ -15,9 +15,8 @@ items below are explicitly **blocked** and are listed as such rather than marked
   table (`tab:system-comparison`), with explicit Strengths/Weaknesses columns per instruction.
 - [x] Diagnostic vs. official Task 1 results kept clearly separated. Verdict from the review:
   the paper never claims an official Task 1/Subtask 1 result; every retrieval/VLM number in
-  §4.7 is labeled diagnostic, dated, and sourced. One `[PLACEHOLDER]` remains for the number that
-  does not exist yet (organizer-scored official Task 1 result) — this is intentional, not an
-  oversight.
+  §4.7 is labeled diagnostic, dated, and sourced. The unresolved official-evaluator issue is
+  stated in prose rather than left as a submission-facing placeholder.
 - [x] Completed `task1-neighbor2` VLM results reported as a final, explicitly diagnostic run
   (490/490 queries, all six languages, 0 errors), with the 183/490 intermediate snapshot removed.
 - [x] Every number added or checked in this pass traces to one of: (a) a source PDF page (Cierpa /
@@ -41,6 +40,8 @@ items below are explicitly **blocked** and are listed as such rather than marked
 - [ ] **Blocked:** official Subtask 1 evaluator and gold-page-set contract confirmation from the
   task organizers (`docs/TASK1_VLM_PLAN.md` §1's stated claim boundary). This is the only item
   that blocks calling any Task 1 number "official."
+- [ ] **Pending:** complete the pre-specified local BGE-M3 + BGE-Reranker-v2-M3 ablation. The
+  implementation and GPU runbook are committed, but no BGE result is included in the paper yet.
 - [ ] **Blocked:** human annotation of `docs/TASK1_ERROR_REVIEW_SAMPLE.csv`. The CSV exists (65
   rows, stratified) but every judgment column is intentionally blank; no inter-annotator agreement
   can be computed until a person annotates it.

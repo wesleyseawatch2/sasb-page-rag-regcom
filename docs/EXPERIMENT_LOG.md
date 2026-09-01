@@ -398,3 +398,23 @@ Copy this template for every reported run.
   languages' Top-1/MRR, but is not a strict improvement (French regresses, and
   the pooled MRR/Near@1/Hit@5 are each slightly below the 10-candidate run's).
   Both configurations remain diagnostic, not official Task 1 scores.
+
+## Pre-specified local BGE-M3 ablation (2026-09-01, pending)
+
+- Scope: a no-API retrieval ablation on the same 490 reconstructed query groups
+  (369 non-empty gold groups). The 490-group diagnostic set is frozen before
+  inspecting BGE outcomes; it is not an official Task 1 evaluation.
+- Retrieval: recompute word/character TF-IDF and metric/unit rules, add
+  multilingual `BAAI/bge-m3`, and fuse the lanes with RRF. Rerank the fused
+  Top-50 text candidates with `BAAI/bge-reranker-v2-m3`.
+- Prespecified settings: 1 GPU worker on a single RTX-class GPU, page text
+  limit 1,500 characters, BGE max length 512 for the first reproducible run,
+  reranker max length 512, and candidate-k 50. Any long-context or sparse/
+  multi-vector variants must be reported as separate ablations rather than
+  selected after viewing held-out results.
+- Entry point: `py src/task1/local_bge_ablation.py`; GPU setup and smoke test:
+  `docs/TASK1_BGE_GPU_RUNBOOK.md`. Outputs will be written to
+  `artifacts/metrics/task1_bge_ablation.json` and the ignored `runs/` directory.
+- Status: implementation complete; the previous CPU pilot was stopped before
+  completion and its incomplete metric file was removed. Final BGE numbers,
+  elapsed time, and per-language analysis remain to be filled after the GPU run.
