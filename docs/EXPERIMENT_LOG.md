@@ -311,3 +311,58 @@ Copy this template for every reported run.
   `runs/task1-dense-optimized/metrics-vlm.json` (generated files are ignored
   by Git). These remain reconstructed diagnostics, not official Task 1 scores,
   because the released query-level gold/evaluator contract is unavailable.
+
+## Neighbor-expanded top-20 VLM reranking, task1-neighbor2 (2026-09-01, in progress)
+
+- Status: **in progress** at the time of this entry -- another process is
+  actively writing `runs/task1-neighbor2/vlm-full20-cache.jsonl`; nothing below
+  is a final or official result.
+- Configuration: same 490 reconstructed `report_metric` query groups (369
+  non-empty gold) as the dense-optimized run above. Retrieval fuses TF-IDF,
+  character TF-IDF, metric/unit rules, and dense
+  `paraphrase-multilingual-MiniLM-L12-v2` embeddings via RRF (`k=60`, weights
+  tfidf=1.0, char\_tfidf=0.02, rules=0.5, dense=1.0), then expands the fused
+  top-10 anchors with a `neighbor_window=2` page window (`neighbor_anchor_k=10`)
+  before truncating to a **top-20** VLM candidate pool -- twice the candidate
+  depth of the dense-optimized run. VLM: `gpt-5.4-nano-2026-03-17`, one request
+  per query.
+- Snapshot at 2026-09-01 12:06 (Asia/Taipei): 183/490 queries complete, 0
+  errors, 307 pending. Only Chinese and English have any completed queries so
+  far; French, Japanese, Korean, and Thai are entirely pending. The "overall"
+  figures below are therefore skewed toward these two languages and are **not**
+  yet representative of the eventual 6-language result -- do not quote them as
+  a 6-language number.
+- Paired fused-baseline vs VLM on the 133 non-empty-gold queries completed so
+  far: Hit@1 0.271 -> 0.391, Hit@5 0.609 -> 0.632, Hit@10/candidate recall
+  0.707 (VLM reranking cannot exceed candidate recall), Near@1 0.331 -> 0.459,
+  MRR 0.411 -> 0.487.
+- Per-language so far -- Chinese (84 non-empty): fused Hit@1 0.155 -> VLM
+  0.262, MRR 0.289 -> 0.362, candidate recall 0.571. English (49 non-empty):
+  fused Hit@1 0.469 -> VLM 0.612, MRR 0.620 -> 0.702, candidate recall 0.939.
+- API accounting so far: 5,409,102 input tokens (93,568 cached) and 103,447
+  output tokens across 183 complete calls, 0 errors; estimated cost USD 1.211
+  using the same $0.20/M input / $1.25/M output nano-rate convention as the
+  entries above (cached-token discount not modeled); mean latency 10.775
+  seconds, median 7.931 seconds, p95 29.267 seconds.
+- Reproducible, API-free entry point: `py src/task1/aggregate_neighbor2.py`.
+  Reads only `runs/task1-neighbor2/retrieval.jsonl` and
+  `runs/task1-neighbor2/vlm-full20-cache.jsonl` (or `vlm-full20.jsonl` once the
+  run finishes writing a post-processed file), makes no API calls, and never
+  writes into `runs/`; output goes to
+  `artifacts/metrics/task1_neighbor2_summary.json` and
+  `artifacts/metrics/task1_neighbor2_per_query.csv`. Rerun it once
+  `vlm-full20-cache.jsonl` stops growing to regenerate final numbers before
+  citing this run as complete.
+- A stratified, human-review-only error sample was built from this snapshot:
+  `py src/task1/build_error_review_sample.py` writes
+  `docs/TASK1_ERROR_REVIEW_SAMPLE.csv` (65 rows, stratified by language and by
+  a mechanically derived Hit@1 transition category). Because only Chinese and
+  English are represented in the source data so far, the sample currently only
+  covers those two languages; rerun the same command after the full run
+  completes for proper 6-language stratified coverage. The script never fills
+  in the qualitative error-taxonomy columns from Section 13 below -- those are
+  left blank for a human annotator.
+- This remains a diagnostic snapshot of an unfinished run, not an official
+  Task 1 score and not yet a frozen configuration. Until it completes, the
+  "Dense retrieval and full VLM reranking" entry above (490/490, top-10
+  candidates) remains the most recent **complete** diagnostic to cite.
