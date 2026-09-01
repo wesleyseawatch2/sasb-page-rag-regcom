@@ -1,4 +1,4 @@
-# RegComEvidenceMatch at NTCIR-19 RegCom
+# IMNTPU at NTCIR-19 RegCom: Evidence-Aware Multilingual Retrieval and Verification for SASB-Aligned ESG Regulatory Compliance Checking
 
 This repository contains the paper, source snapshots, evaluation utilities, and
 selected analysis artifacts for the IMNTPU participation in the NTCIR-19
