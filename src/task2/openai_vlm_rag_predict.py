@@ -17,6 +17,7 @@ import argparse
 import base64
 import json
 import os
+import random
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -169,23 +170,44 @@ def call_openai(
     model: str,
     max_output_tokens: int,
     timeout: float,
+    retries: int,
 ) -> tuple[str, dict[str, Any]]:
-    started = time.perf_counter()
-    response = client.responses.create(
-        model=model,
-        input=messages,
-        max_output_tokens=max_output_tokens,
-        store=False,
-    )
-    elapsed = time.perf_counter() - started
-    usage = getattr(response, "usage", None)
-    usage_dict = usage.model_dump() if usage and hasattr(usage, "model_dump") else {}
-    return response.output_text, {
-        "response_id": getattr(response, "id", ""),
-        "model": getattr(response, "model", model),
-        "latency_seconds": round(elapsed, 3),
-        "usage": usage_dict,
-    }
+    for attempt in range(max(0, retries) + 1):
+        started = time.perf_counter()
+        try:
+            response = client.responses.create(
+                model=model,
+                input=messages,
+                max_output_tokens=max_output_tokens,
+                store=False,
+            )
+            elapsed = time.perf_counter() - started
+            usage = getattr(response, "usage", None)
+            usage_dict = usage.model_dump() if usage and hasattr(usage, "model_dump") else {}
+            return response.output_text, {
+                "response_id": getattr(response, "id", ""),
+                "model": getattr(response, "model", model),
+                "latency_seconds": round(elapsed, 3),
+                "attempts": attempt + 1,
+                "usage": usage_dict,
+            }
+        except Exception as exc:
+            status = getattr(exc, "status_code", None)
+            name = type(exc).__name__.lower()
+            retryable = (
+                status in {408, 409, 429, 500, 502, 503, 504}
+                or "ratelimit" in name
+                or "timeout" in name
+                or "connection" in name
+                or "temporarily" in str(exc).lower()
+            )
+            if not retryable or attempt >= max(0, retries):
+                raise
+            # Rate-limit responses usually clear within a few seconds. Jitter
+            # prevents concurrent resumed workers from retrying in lockstep.
+            delay = min(60.0, (2.0**attempt) + random.uniform(0.1, 0.9))
+            time.sleep(delay)
+    raise RuntimeError("unreachable retry loop")
 
 
 def usage_cost(usage: dict[str, Any]) -> float:
@@ -213,6 +235,8 @@ def main() -> None:
     parser.add_argument("--dpi", type=int, default=96)
     parser.add_argument("--image-detail", choices=["low", "high"], default="low")
     parser.add_argument("--timeout", type=float, default=120.0)
+    parser.add_argument("--retries", type=int, default=5,
+                        help="Retries for 429/timeouts/transient 5xx responses")
     parser.add_argument("--concurrency", type=int, default=4)
     parser.add_argument("--max-cost-usd", type=float, default=1.0)
     parser.add_argument("--tag", default="gpt54mini_vlm")
@@ -300,7 +324,9 @@ def main() -> None:
             metadata = {"model": args.model, "usage": {}, "latency_seconds": 0.0}
         else:
             assert client is not None
-            raw, metadata = call_openai(client, messages, args.model, args.max_output_tokens, args.timeout)
+            raw, metadata = call_openai(
+                client, messages, args.model, args.max_output_tokens, args.timeout, args.retries
+            )
         parsed = parse_jsonish(raw)
         pred_label = normalize_label(parsed.get("pred_label", raw))
         category_match = normalize_match(parsed.get("category_match", ""))
@@ -389,6 +415,7 @@ def main() -> None:
         "max_cost_usd": args.max_cost_usd,
         "top_k": args.top_k,
         "concurrency": args.concurrency,
+        "retries": args.retries,
         "predictions_path": str(predictions_path),
         "trace_path": str(trace_path),
         "note": "Task 2 multimodal diagnostic; image is the target page only, few-shot examples remain text snippets.",
