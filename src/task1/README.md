@@ -113,3 +113,38 @@ positive and negative page labels; this is expected for page retrieval and is
 not by itself an annotation conflict. Only 3 query-page groups had two
 different labels. Consequently, these values are a pipeline diagnostic and
 must not be presented as official Task 1 results.
+
+## Dense + nano VLM optimization run
+
+The completed 2026-09-01 optimization uses the 490-group reconstructed JSON
+set and combines multilingual MiniLM dense retrieval with word/character
+TF-IDF and metric/unit rules:
+
+```powershell
+py src/task1/task1_pipeline.py retrieve `
+  --queries runs/task1-optimized/queries.jsonl `
+  --pages runs/task1-json-source-v2/pages.jsonl `
+  --output runs/task1-dense-optimized/retrieval.jsonl `
+  --dense-model paraphrase-multilingual-MiniLM-L12-v2 `
+  --dense-page-char-limit 1500 `
+  --dense-cache-dir cache/task1-dense `
+  --tfidf-weight 1.0 --char-weight 0.02 --dense-weight 1.0 `
+  --rule-weight 0.5 --rrf-k 60 --top-k 30 `
+  --candidate-pool-k 30 --query-text-mode raw --keep-rankings 30
+
+$env:OPENAI_API_KEY=$null
+py src/task1/task1_pipeline.py rerank `
+  --retrieval runs/task1-dense-optimized/retrieval.jsonl `
+  --output runs/task1-dense-optimized/vlm-full.jsonl `
+  --cache runs/task1-dense-optimized/vlm-full-cache.jsonl `
+  --env-file ..\.env --execute-api --model gpt-5.4-nano `
+  --candidates 10 --dpi 96 --image-detail low `
+  --max-output-tokens 900 --workers 4 --ranking-field fused
+```
+
+The dense-fused retrieval reaches Hit@1/5/10 of 0.220/0.493/0.631 and MRR
+0.350. Full nano reranking reaches 0.328/0.583/0.631 and MRR 0.431. The
+490-call run used an estimated USD 1.531. Use `--workers 1` for conservative
+rate-limit handling; completed requests are always reused from the JSONL
+cache. These figures are reconstructed diagnostics and should not be reported
+as official Task 1 scores until the query-level evaluator is released.

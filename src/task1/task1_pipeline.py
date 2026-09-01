@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import base64
 import csv
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import io
 import json
@@ -562,7 +563,20 @@ def command_retrieve(args: argparse.Namespace) -> None:
                     "_",
                     f"{model_slug}__{query['lang']}__{query['report_stem']}__{pdf_hash}",
                 )
-                cache_file = dense_cache_dir / f"{cache_name}__{args.dense_page_char_limit}.npy"
+                # Use a short, stable cache filename for every report.  The
+                # workspace itself can already be deeply nested on Windows,
+                # so checking the relative path length is not sufficient to
+                # avoid MAX_PATH failures.  Fall back to the previous readable
+                # filename so existing caches remain reusable.
+                digest = hashlib.sha256(cache_name.encode("utf-8")).hexdigest()[:20]
+                cache_file = dense_cache_dir / (
+                    f"{model_slug[:24]}__{digest}__{args.dense_page_char_limit}.npy"
+                )
+                legacy_cache_file = dense_cache_dir / (
+                    f"{cache_name}__{args.dense_page_char_limit}.npy"
+                )
+                if not cache_file.exists() and legacy_cache_file.exists():
+                    cache_file = legacy_cache_file
                 if cache_file.exists():
                     loaded = np.load(cache_file)
                     dense_current_embeddings = loaded if len(loaded) == len(texts) else None
@@ -866,16 +880,54 @@ def command_rerank(args: argparse.Namespace) -> None:
     completed: dict[str, dict[str, Any]] = {}
     if args.cache.exists():
         completed = {row["sample_id"]: row for row in read_jsonl(args.cache) if row.get("sample_id")}
-    output_rows: list[dict[str, Any]] = []
+    output_rows: list[dict[str, Any] | None] = [None] * len(rows)
     cache_handle = None
     if args.execute_api:
         args.cache.parent.mkdir(parents=True, exist_ok=True)
         cache_handle = args.cache.open("a", encoding="utf-8")
+
+    def complete_trace(row: dict[str, Any], candidates: list[dict[str, Any]]) -> dict[str, Any]:
+        """Execute one request and convert failures into retryable traces."""
+        try:
+            parsed, metadata = call_openai_vlm(
+                row,
+                candidates,
+                args.model,
+                args.dpi,
+                args.image_detail,
+                args.max_output_tokens,
+                args.api_timeout,
+            )
+            return {
+                "sample_id": row["sample_id"],
+                "status": "complete",
+                "candidate_pages": [item["page"] for item in candidates],
+                "prediction": parsed,
+                **metadata,
+            }
+        except Exception as exc:
+            # Do not cache failures: a later run should be able to retry them.
+            return {
+                "sample_id": row["sample_id"],
+                "status": "error",
+                "model": args.model,
+                "candidate_pages": [item["page"] for item in candidates],
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+
+    def add_output(position: int, row: dict[str, Any], candidates: list[dict[str, Any]], trace: dict[str, Any]) -> None:
+        ranked = normalize_vlm_ranking(
+            trace.get("prediction", {}).get("ranked_pages", []), candidates
+        )
+        output_rows[position - 1] = {**row, "vlm_trace": trace, "vlm_ranked": ranked}
+
     try:
+        pending: list[tuple[int, dict[str, Any], list[dict[str, Any]]] ] = []
         for position, row in enumerate(rows, 1):
             candidates = list(row.get(args.ranking_field, []))[: args.candidates]
             if row["sample_id"] in completed:
                 trace = completed[row["sample_id"]]
+                add_output(position, row, candidates, trace)
             elif not args.execute_api:
                 trace = {
                     "sample_id": row["sample_id"],
@@ -884,47 +936,38 @@ def command_rerank(args: argparse.Namespace) -> None:
                     "candidate_pages": [item["page"] for item in candidates],
                     "prompt": rerank_prompt(row, candidates),
                 }
+                add_output(position, row, candidates, trace)
             else:
-                try:
-                    parsed, metadata = call_openai_vlm(
-                        row,
-                        candidates,
-                        args.model,
-                        args.dpi,
-                        args.image_detail,
-                        args.max_output_tokens,
-                        args.api_timeout,
-                    )
-                    trace = {
-                        "sample_id": row["sample_id"],
-                        "status": "complete",
-                        "candidate_pages": [item["page"] for item in candidates],
-                        "prediction": parsed,
-                        **metadata,
-                    }
-                    assert cache_handle is not None
-                    cache_handle.write(json.dumps(trace, ensure_ascii=False) + "\n")
-                    cache_handle.flush()
-                except Exception as exc:
-                    # Keep a malformed/failed response from aborting a long run.
-                    # Do not cache failures: a later run should be able to retry.
-                    trace = {
-                        "sample_id": row["sample_id"],
-                        "status": "error",
-                        "model": args.model,
-                        "candidate_pages": [item["page"] for item in candidates],
-                        "error": f"{type(exc).__name__}: {exc}",
-                    }
-            ranked = normalize_vlm_ranking(
-                trace.get("prediction", {}).get("ranked_pages", []), candidates
-            )
-            output_rows.append({**row, "vlm_trace": trace, "vlm_ranked": ranked})
-            if position % 10 == 0 or position == len(rows):
-                print(f"reranked {position}/{len(rows)}")
+                pending.append((position, row, candidates))
+
+        if pending and args.execute_api:
+            workers = max(1, min(int(args.workers), len(pending)))
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                future_map = {
+                    executor.submit(complete_trace, row, candidates): (position, row, candidates)
+                    for position, row, candidates in pending
+                }
+                completed_count = len(rows) - len(pending)
+                for future in as_completed(future_map):
+                    position, row, candidates = future_map[future]
+                    trace = future.result()
+                    if trace.get("status") == "complete":
+                        assert cache_handle is not None
+                        cache_handle.write(json.dumps(trace, ensure_ascii=False) + "\n")
+                        cache_handle.flush()
+                    add_output(position, row, candidates, trace)
+                    completed_count += 1
+                    if completed_count % 10 == 0 or completed_count == len(rows):
+                        print(f"reranked {completed_count}/{len(rows)}")
+        elif not args.execute_api:
+            for completed_count in range(10, len(rows) + 1, 10):
+                print(f"reranked {completed_count}/{len(rows)}")
+            if len(rows) % 10:
+                print(f"reranked {len(rows)}/{len(rows)}")
     finally:
         if cache_handle:
             cache_handle.close()
-    write_jsonl(args.output, output_rows)
+    write_jsonl(args.output, [row for row in output_rows if row is not None])
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1031,6 +1074,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rerank.add_argument(
         "--ranking-field", choices=["fused", "candidate_pool"], default="fused"
+    )
+    rerank.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="Concurrent API requests (default: 1; use a small value such as 4).",
     )
     rerank.add_argument("--execute-api", action="store_true")
     rerank.set_defaults(func=command_rerank)

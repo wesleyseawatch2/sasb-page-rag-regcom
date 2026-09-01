@@ -276,3 +276,38 @@ Copy this template for every reported run.
 - Reproducible entry points: `src/task1/end_to_end_vlm.py` performs the
   cached second-stage calls; `src/task1/aggregate_e2e.py` merges language runs
   and recomputes token, cost, latency, and diagnostic metrics.
+
+## Dense retrieval and full VLM reranking (2026-09-01)
+
+- Scope: all 490 reconstructed `report_metric` query groups; 369 groups have
+  positive gold pages and 121 groups have no positive page annotations.
+- Retrieval: multilingual `paraphrase-multilingual-MiniLM-L12-v2` page
+  embeddings (1,500-character inputs), word/character TF-IDF, metric/unit
+  rules, and reciprocal-rank fusion. Embeddings are cached with short stable
+  filenames so the pipeline works in deeply nested Windows workspaces.
+- Dense-fused retrieval: Hit@1 0.220, Hit@5 0.493, Hit@10/candidate recall
+  0.631, Near@1 0.293, and MRR 0.350. Relative to the previous fused
+  diagnostic (0.192 / 0.396 / 0.507 / 0.291), the largest gain is candidate
+  recall, which is the prerequisite for any VLM reranker.
+- VLM: `gpt-5.4-nano-2026-03-17` through the Responses API; ten 96-DPI,
+  low-detail page images per query; 900 output-token cap. The run used four
+  concurrent requests initially and single-worker retries for rate-limited
+  requests. All 490/490 traces completed successfully after retries.
+- Dense + VLM ranking: Hit@1 0.328, Hit@5 0.583, Hit@10 0.631, Near@1
+  0.423, and MRR 0.431. Compared with dense-fused retrieval, this is +10.8
+  percentage points at Hit@1, +8.9 points at Hit@5, and +0.081 MRR; Hit@10
+  is unchanged because reranking cannot recover pages absent from the top-10
+  candidate set.
+- Per-language VLM Hit@1 / MRR: Chinese 0.259 / 0.375, English 0.547 /
+  0.647, French 0.400 / 0.554, Japanese 0.309 / 0.387, Korean 0.392 /
+  0.504, and Thai 0.109 / 0.173. Thai remains the main candidate-recall
+  bottleneck (0.313), followed by Chinese (0.576) and Japanese (0.545).
+- API accounting: 6,758,052 input tokens and 143,304 output tokens;
+  estimated cost USD 1.531 using the configured nano rates. Mean latency was
+  8.13 seconds, p95 22.55 seconds, and maximum 99.09 seconds.
+- Reproducible artifacts: `runs/task1-dense-optimized/retrieval.jsonl`,
+  `runs/task1-dense-optimized/vlm-full.jsonl`,
+  `runs/task1-dense-optimized/vlm-full-analysis.json`, and
+  `runs/task1-dense-optimized/metrics-vlm.json` (generated files are ignored
+  by Git). These remain reconstructed diagnostics, not official Task 1 scores,
+  because the released query-level gold/evaluator contract is unavailable.
