@@ -131,8 +131,9 @@ Figure~\ref{fig:architecture} shows the proposed research architecture of \SASBP
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{sasb_page_rag_architecture.pdf}
-\caption{Unified research architecture for Task 1 full-report page matching and Task 2 single-page metric verification. Task 1 uses BGE-M3 multi-representation candidate generation with VLM reranking; Task 2 compares text LLMs, GPT-5.4-mini page-image verification, and a MiniLM baseline.}
+\includegraphics[width=\textwidth]{sasb_page_rag_architecture_generated.png}
+\caption{Generated unified architecture for Task 1 full-report page matching and Task 2 single-page metric verification. The diagram shows the shared multilingual knowledge and evidence path, Task 1's BGE-M3 retrieval and VLM reranking branch, Task 2's page-image verification models, and the corresponding evaluation outputs.}
+\Description{A generated left-to-right architecture diagram. Multilingual SASB knowledge bases and ESG report inputs are cleaned and converted into page text and page images. A shared retrieval and context stage feeds two branches: Task 1 uses BGE-M3 dense, sparse, and ColBERT representations followed by GPT-5.4-nano VLM reranking for full-report page matching; Task 2 uses Gemini 2.5 Pro, GLM-5.2, and GPT-5.4-mini with text and page images for single-page metric verification. Each branch produces its corresponding retrieval or classification metrics and structured output files.}
 \label{fig:architecture}
 \end{figure*}
 
@@ -204,6 +205,14 @@ MiniLM + LR & 0.4603 & 0.4489 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{task2_model_score_comparison.pdf}
+\caption{Task 2 model comparison using the same 793 non-Chinese test rows. Bars report Micro F1 and Macro F1; higher is better.}
+\Description{A grouped horizontal bar chart comparing Gemini 2.5 Pro RAG, GLM-5.2 RAG, GPT-5.4-mini VLM, and MiniLM plus logistic regression on Task 2. Gemini has the highest Micro F1 and Macro F1, followed by GLM-5.2, GPT-5.4-mini, and MiniLM.}
+\label{fig:task2-model-bars}
+\end{figure*}
 
 \subsection{Class-Level Results}
 Table~\ref{tab:class} shows class-level F1. The \texttt{no} class is strongest for both LLM systems, while \texttt{yes but not complete} remains the weakest class. Gemini reaches 0.4835 F1 on \texttt{yes but not complete}; GLM-5.2 reaches 0.4717; MiniLM reaches 0.3931. GLM-5.2 has higher recall on the partial class, but lower precision, suggesting that it more often uses the partial label as a cautious middle state. Gemini is more conservative on partial predictions and obtains better overall balance.
@@ -322,6 +331,14 @@ BGE-Reranker-v2-M3 (raw, all languages) & 0.160 & 0.504 & 0.672 & -- & -- & 0.31
 \bottomrule
 \end{tabular}
 \end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{task1_retrieval_score_comparison.pdf}
+\caption{Task 1 retrieval comparison on the 369 reconstructed query groups with non-empty gold pages. The chart reports exact page hits at ranks 1, 5, and 10 together with mean reciprocal rank; higher is better.}
+\Description{A grouped horizontal bar chart comparing five Task 1 retrieval configurations: a MiniLM fused baseline, BGE-M3 dense, BGE-M3 dense plus sparse, BGE-M3 dense plus sparse plus ColBERT, and BGE-Reranker-v2-M3. The three-representation BGE-M3 configuration has the highest Hit at 1, Hit at 5, Hit at 10, and MRR, while the generic BGE reranker has the lowest Hit at 1 and MRR.}
+\label{fig:task1-retrieval-bars}
+\end{figure*}
 
 The best first-stage configuration is the three-representation BGE-M3 fusion, improving over the MiniLM baseline by 4.6, 5.2, and 4.4 percentage points on Hit@1, Hit@5, and Hit@10, respectively, and by 0.048 MRR. The gains are consistent with the component ablation: sparse features add about one point over dense-only retrieval, and the ColBERT-style multi-vector lane adds a further 1.5--2 points. Natural-language query rewrites underperform the original metric-keyword queries (0.209--0.228 Hit@1 across the tested variants), suggesting that the added English ``what counts'' wording introduces noise for non-English reports. Increasing the BGE maximum length from 2,048 to 8,192 tokens has almost no effect because most page texts are shorter than the limit. In contrast, the BGE reranker lowers Top-1 and MRR (0.160 and 0.313): it often promotes SASB/GRI index pages that mention a metric code over the page containing the actual disclosure. Language-specific results show the largest Top-1 gains for Korean (0.216 to 0.373) and Japanese (0.182 to 0.236), while Thai remains the principal candidate-generation bottleneck (Hit@10 0.281). These findings support stronger multilingual candidate generation, but also show that reranking quality and disclosure-page relevance must be analyzed separately. A 65-row stratified, human-review-only error sample is provided in \texttt{docs/TASK1\_ERROR\_REVIEW\_SAMPLE.csv}; its qualitative judgment columns intentionally remain blank for manual annotation.
 
