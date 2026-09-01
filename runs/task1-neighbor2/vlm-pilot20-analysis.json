@@ -1,0 +1,473 @@
+{
+  "overall": {
+    "queries": 12,
+    "nonempty_gold": 10,
+    "empty_gold": 2,
+    "candidate_recall_at10": 0.9,
+    "baseline_hit_at_1": 0.2,
+    "vlm_hit_at_1": 0.4,
+    "baseline_mrr": 0.4282539682539682,
+    "vlm_mrr": 0.5492857142857143,
+    "no_relevant_page_true_rate_empty": 0.0,
+    "no_relevant_page_true_rate_nonempty": 0.1
+  },
+  "per_language": {
+    "chinese": {
+      "queries": 2,
+      "nonempty_gold": 2,
+      "empty_gold": 0,
+      "candidate_recall_at10": 1.0,
+      "baseline_hit_at_1": 0.0,
+      "vlm_hit_at_1": 0.5,
+      "baseline_mrr": 0.5,
+      "vlm_mrr": 0.75,
+      "no_relevant_page_true_rate_empty": 0.0,
+      "no_relevant_page_true_rate_nonempty": 0.0
+    },
+    "english": {
+      "queries": 2,
+      "nonempty_gold": 1,
+      "empty_gold": 1,
+      "candidate_recall_at10": 1.0,
+      "baseline_hit_at_1": 1.0,
+      "vlm_hit_at_1": 1.0,
+      "baseline_mrr": 1.0,
+      "vlm_mrr": 1.0,
+      "no_relevant_page_true_rate_empty": 0.0,
+      "no_relevant_page_true_rate_nonempty": 0.0
+    },
+    "french": {
+      "queries": 2,
+      "nonempty_gold": 2,
+      "empty_gold": 0,
+      "candidate_recall_at10": 1.0,
+      "baseline_hit_at_1": 0.5,
+      "vlm_hit_at_1": 0.0,
+      "baseline_mrr": 0.55,
+      "vlm_mrr": 0.13333333333333333,
+      "no_relevant_page_true_rate_empty": 0.0,
+      "no_relevant_page_true_rate_nonempty": 0.5
+    },
+    "japanese": {
+      "queries": 2,
+      "nonempty_gold": 1,
+      "empty_gold": 1,
+      "candidate_recall_at10": 1.0,
+      "baseline_hit_at_1": 0.0,
+      "vlm_hit_at_1": 0.0,
+      "baseline_mrr": 0.1111111111111111,
+      "vlm_mrr": 0.14285714285714285,
+      "no_relevant_page_true_rate_empty": 0.0,
+      "no_relevant_page_true_rate_nonempty": 0.0
+    },
+    "korean": {
+      "queries": 2,
+      "nonempty_gold": 2,
+      "empty_gold": 0,
+      "candidate_recall_at10": 0.5,
+      "baseline_hit_at_1": 0.0,
+      "vlm_hit_at_1": 0.5,
+      "baseline_mrr": 0.11904761904761904,
+      "vlm_mrr": 0.5416666666666666,
+      "no_relevant_page_true_rate_empty": 0.0,
+      "no_relevant_page_true_rate_nonempty": 0.0
+    },
+    "thai": {
+      "queries": 2,
+      "nonempty_gold": 2,
+      "empty_gold": 0,
+      "candidate_recall_at10": 1.0,
+      "baseline_hit_at_1": 0.0,
+      "vlm_hit_at_1": 0.5,
+      "baseline_mrr": 0.41666666666666663,
+      "vlm_mrr": 0.75,
+      "no_relevant_page_true_rate_empty": 0.0,
+      "no_relevant_page_true_rate_nonempty": 0.0
+    }
+  },
+  "categories": {
+    "neither_top1": 5,
+    "vlm_improved_top1": 2,
+    "empty_gold": 2,
+    "both_top1": 1,
+    "vlm_degraded_top1": 1,
+    "candidate_recall_miss": 1
+  },
+  "records": [
+    {
+      "sample_id": "248802454c38b4bfbf84",
+      "lang": "chinese",
+      "cid": "alchip",
+      "topic": "水管理",
+      "metric_code": "TC-SC-140a.1",
+      "gold_pages": [
+        32
+      ],
+      "baseline_top5": [
+        31,
+        32,
+        29,
+        30,
+        33
+      ],
+      "vlm_top5": [
+        31,
+        32,
+        29,
+        30,
+        33
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 0.5,
+      "vlm_mrr": 0.5,
+      "no_relevant_page": false,
+      "category": "neither_top1"
+    },
+    {
+      "sample_id": "9df1172da2c4f1e468ad",
+      "lang": "chinese",
+      "cid": "alchip",
+      "topic": "製造之能源管理",
+      "metric_code": "",
+      "gold_pages": [
+        31
+      ],
+      "baseline_top5": [
+        29,
+        31,
+        33,
+        32,
+        30
+      ],
+      "vlm_top5": [
+        31,
+        32,
+        33,
+        30,
+        29
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": true,
+      "baseline_mrr": 0.5,
+      "vlm_mrr": 1.0,
+      "no_relevant_page": false,
+      "category": "vlm_improved_top1"
+    },
+    {
+      "sample_id": "17089ef65765861d679c",
+      "lang": "english",
+      "cid": "06-21_gb-_lvmh_rse2022",
+      "topic": "Management of Chemicals in Products",
+      "metric_code": "CG-AA-250a.2",
+      "gold_pages": [],
+      "baseline_top5": [
+        106,
+        82,
+        130,
+        155,
+        41
+      ],
+      "vlm_top5": [
+        106,
+        128,
+        129,
+        82,
+        130
+      ],
+      "candidate_recall_at10": false,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 0.0,
+      "vlm_mrr": 0.0,
+      "no_relevant_page": false,
+      "category": "empty_gold"
+    },
+    {
+      "sample_id": "565fa568563991955cd9",
+      "lang": "english",
+      "cid": "06-21_gb-_lvmh_rse2022",
+      "topic": "Labour Conditions in the Supply Chain",
+      "metric_code": "CG-AA-430b.1",
+      "gold_pages": [
+        128,
+        129,
+        130,
+        132
+      ],
+      "baseline_top5": [
+        130,
+        128,
+        132,
+        129,
+        106
+      ],
+      "vlm_top5": [
+        132,
+        130,
+        128,
+        129,
+        131
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": true,
+      "vlm_hit_at_1": true,
+      "baseline_mrr": 1.0,
+      "vlm_mrr": 1.0,
+      "no_relevant_page": false,
+      "category": "both_top1"
+    },
+    {
+      "sample_id": "188b357ae7e18d78b458",
+      "lang": "french",
+      "cid": "20230630_rapportesg2022_coveafinance_vf",
+      "topic": "Financed Emissions",
+      "metric_code": "FN-AC-410b.2",
+      "gold_pages": [
+        14
+      ],
+      "baseline_top5": [
+        14,
+        8,
+        13,
+        19,
+        2
+      ],
+      "vlm_top5": [
+        5,
+        16,
+        15,
+        9,
+        17
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": true,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 1.0,
+      "vlm_mrr": 0.16666666666666666,
+      "no_relevant_page": false,
+      "category": "vlm_degraded_top1"
+    },
+    {
+      "sample_id": "720e30af1baf916000fe",
+      "lang": "french",
+      "cid": "20230630_rapportesg2022_coveafinance_vf",
+      "topic": "Employee Diversity & Inclusion",
+      "metric_code": "FN-AC-330a.1",
+      "gold_pages": [
+        9
+      ],
+      "baseline_top5": [
+        6,
+        11,
+        5,
+        12,
+        4
+      ],
+      "vlm_top5": [
+        6,
+        11,
+        5,
+        12,
+        4
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 0.1,
+      "vlm_mrr": 0.1,
+      "no_relevant_page": true,
+      "category": "neither_top1"
+    },
+    {
+      "sample_id": "08c612c8f71536d2f3cc",
+      "lang": "japanese",
+      "cid": "hokkaido_gas",
+      "topic": "End-Use Efficiency",
+      "metric_code": "IF-GU-420a.2",
+      "gold_pages": [],
+      "baseline_top5": [
+        15,
+        14,
+        27,
+        21,
+        11
+      ],
+      "vlm_top5": [
+        11,
+        15,
+        16,
+        12,
+        13
+      ],
+      "candidate_recall_at10": false,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 0.0,
+      "vlm_mrr": 0.0,
+      "no_relevant_page": false,
+      "category": "empty_gold"
+    },
+    {
+      "sample_id": "5bc8f0384fce9f0ded72",
+      "lang": "japanese",
+      "cid": "hokkaido_gas",
+      "topic": "Gas Utility Network Integrity",
+      "metric_code": "IF-GU-540a.4",
+      "gold_pages": [
+        8,
+        9,
+        21
+      ],
+      "baseline_top5": [
+        27,
+        24,
+        23,
+        12,
+        15
+      ],
+      "vlm_top5": [
+        22,
+        12,
+        13,
+        23,
+        24
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 0.1111111111111111,
+      "vlm_mrr": 0.14285714285714285,
+      "no_relevant_page": false,
+      "category": "neither_top1"
+    },
+    {
+      "sample_id": "098ff73d3c56ba51dffa",
+      "lang": "korean",
+      "cid": "bh",
+      "topic": "Materials Sourcing",
+      "metric_code": "Description of the management of risks associated with the use of critical materials",
+      "gold_pages": [
+        76
+      ],
+      "baseline_top5": [
+        87,
+        29,
+        78,
+        44,
+        96
+      ],
+      "vlm_top5": [
+        76,
+        44,
+        29,
+        78,
+        26
+      ],
+      "candidate_recall_at10": false,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": true,
+      "baseline_mrr": 0.07142857142857142,
+      "vlm_mrr": 1.0,
+      "no_relevant_page": false,
+      "category": "candidate_recall_miss"
+    },
+    {
+      "sample_id": "0e84f1016ce043895e64",
+      "lang": "korean",
+      "cid": "bh",
+      "topic": "Supply Chain Management",
+      "metric_code": "Percentage of Tier 1 supplier facilities audited in the RBA Validated Audit Process (VAP) or equivalent, by (a) all facilities and (b) high-risk facilities",
+      "gold_pages": [
+        74,
+        75,
+        114
+      ],
+      "baseline_top5": [
+        76,
+        26,
+        44,
+        96,
+        95
+      ],
+      "vlm_top5": [
+        78,
+        76,
+        43,
+        77,
+        24
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 0.16666666666666666,
+      "vlm_mrr": 0.08333333333333333,
+      "no_relevant_page": false,
+      "category": "neither_top1"
+    },
+    {
+      "sample_id": "0e95500b6b29fe0c7006",
+      "lang": "thai",
+      "cid": "bafs",
+      "topic": "Workforce Health & Safety",
+      "metric_code": "EM-RM-320a.1",
+      "gold_pages": [
+        121
+      ],
+      "baseline_top5": [
+        209,
+        121,
+        220,
+        219,
+        118
+      ],
+      "vlm_top5": [
+        209,
+        121,
+        220,
+        219,
+        118
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": false,
+      "baseline_mrr": 0.5,
+      "vlm_mrr": 0.5,
+      "no_relevant_page": false,
+      "category": "neither_top1"
+    },
+    {
+      "sample_id": "50099ef106cbd38cc34c",
+      "lang": "thai",
+      "cid": "bafs",
+      "topic": "Greenhouse Gas Emissions",
+      "metric_code": "EM-RM-110a.1",
+      "gold_pages": [
+        62
+      ],
+      "baseline_top5": [
+        217,
+        16,
+        62,
+        9,
+        216
+      ],
+      "vlm_top5": [
+        62,
+        60,
+        63,
+        64,
+        217
+      ],
+      "candidate_recall_at10": true,
+      "baseline_hit_at_1": false,
+      "vlm_hit_at_1": true,
+      "baseline_mrr": 0.3333333333333333,
+      "vlm_mrr": 1.0,
+      "no_relevant_page": false,
+      "category": "vlm_improved_top1"
+    }
+  ]
+}

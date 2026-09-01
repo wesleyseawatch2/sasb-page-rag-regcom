@@ -1,0 +1,11 @@
+{
+  "ranking_field": "fused",
+  "evaluated_non_empty_gold": 369,
+  "hit_at_1": 0.21951219512195122,
+  "hit_at_5": 0.4932249322493225,
+  "hit_at_10": 0.6314363143631436,
+  "near_at_1": 0.2926829268292683,
+  "mrr": 0.350322671198657,
+  "excluded_empty_gold": 121,
+  "errors": 0
+}

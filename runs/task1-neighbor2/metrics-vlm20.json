@@ -1,0 +1,11 @@
+{
+  "ranking_field": "vlm_ranked",
+  "evaluated_non_empty_gold": 369,
+  "hit_at_1": 0.3143631436314363,
+  "hit_at_5": 0.5609756097560976,
+  "hit_at_10": 0.6476964769647696,
+  "near_at_1": 0.3983739837398374,
+  "mrr": 0.42328411631093554,
+  "excluded_empty_gold": 121,
+  "errors": 0
+}

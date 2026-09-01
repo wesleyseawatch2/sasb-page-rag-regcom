@@ -1,0 +1,12 @@
+{
+  "source_truth": "C:\\Users\\wesley\\Downloads",
+  "query_group": "report_metric",
+  "queries": 490,
+  "reports": 63,
+  "pages": 7179,
+  "missing_pdfs": 0,
+  "empty_gold_queries": 121,
+  "mixed_page_label_queries": 229,
+  "same_page_label_conflict_groups": 17,
+  "note": "Queries are reconstructed from Subtask 2 truth and are not asserted to be the official Task 1 release."
+}

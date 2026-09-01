@@ -26,19 +26,20 @@ Subtask 2 numbers with this experiment.
 
 ## Files needed on the new computer
 
-The public Git repository does not include restricted PDFs, raw participant
-data, or ignored run/cache directories. Copy these two generated files from the
-old computer, or regenerate them using the existing Task 1 pipeline:
+The current public snapshot includes the participant JSON/CSV inputs, source
+PDFs, and selected generated runs listed below. If you clone an older commit or
+if the release permission changes, copy the files from a private location
+instead. Do not commit model weights or API keys.
 
 ```text
 runs/task1-dense-optimized/retrieval.jsonl
 runs/task1-json-source-v2/pages.jsonl
 ```
 
-If they are unavailable, obtain the organizer-provided Test Set JSON files and
-source PDFs privately, then follow `src/task1/README.md` to run `prepare`,
-`retrieve`, and the optimized dense configuration. Never commit PDFs, API keys,
-or the private dataset.
+The corresponding `data/test/`, `data/datasets/all/`, and `Training Set/PDF/`
+inputs are also included in the authorized snapshot. If they are unavailable,
+obtain the organizer-provided files and follow `src/task1/README.md` to run
+`prepare`, `retrieve`, and the optimized dense configuration.
 
 ## GPU setup
 

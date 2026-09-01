@@ -1,0 +1,11 @@
+{
+  "ranking_field": "candidate_pool",
+  "evaluated_non_empty_gold": 369,
+  "hit_at_1": 0.14363143631436315,
+  "hit_at_5": 0.4742547425474255,
+  "hit_at_10": 0.6260162601626016,
+  "near_at_1": 0.17615176151761516,
+  "mrr": 0.295766027737129,
+  "excluded_empty_gold": 121,
+  "errors": 0
+}

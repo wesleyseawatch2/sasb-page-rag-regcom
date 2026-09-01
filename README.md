@@ -86,11 +86,16 @@ API keys belong only in `.env`, which is ignored by Git.
 
 ## Data availability and public-release boundary
 
-The official RegCom dataset and source ESG PDFs are not redistributed here.
-Obtain them through the task organizers and place private inputs under
-`data/private/` and source reports under `Training Set/` or `pages/`. Those
-paths are ignored. The repository intentionally excludes API keys, credentials,
-model caches, restricted PDFs, and raw provider logs.
+This public reproducibility snapshot includes the participant Test Set JSON,
+row-level CSV metadata/truth, selected generated Task 1 run inputs, and the
+source ESG PDFs under `Training Set/PDF/`. The project owner confirmed public
+release authorization for this snapshot on 2026-09-01. The PDFs are managed by
+Git LFS because of their size. The repository still excludes API keys,
+credentials, model weights/caches, and raw provider logs.
+
+If the organizer's release permission changes, remove the data snapshot from
+the public repository and use the private-input layout described in
+`docs/TASK1_BGE_GPU_RUNBOOK.md` instead.
 
 The available reference files do not provide independently validated gold
 labels for `category_match` and `unit_match`. Do not report auxiliary-field
