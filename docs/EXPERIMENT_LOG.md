@@ -439,3 +439,44 @@ Copy this template for every reported run.
   one-report/50-page smoke test. A full 7,179-page CPU run is estimated in
   hours and should wait for a CUDA machine or be treated as a low-priority
   no-API ablation.
+
+## Completed BGE-M3 multi-representation ablation (2026-09-01)
+
+- Scope: the frozen 490 reconstructed report--metric query groups, of which
+  369 have non-empty gold pages and 121 have empty gold. Results are page-
+  retrieval measurements for the Task 1 extension; they are not a substitute
+  for the organizer's full-report evaluator.
+- Configurations and unified scores on the 369 non-empty groups:
+
+  | configuration | Hit@1 | Hit@5 | Hit@10 | Hit@20 | Near@1 | MRR |
+  |---|---:|---:|---:|---:|---:|---:|
+  | MiniLM fused baseline | 0.220 | 0.493 | 0.631 | 0.751 | 0.293 | 0.350 |
+  | BGE-M3 dense | 0.238 | 0.504 | 0.631 | 0.748 | 0.290 | 0.369 |
+  | BGE-M3 dense+sparse | 0.249 | 0.523 | 0.648 | 0.772 | 0.312 | 0.381 |
+  | BGE-M3 dense+sparse+ColBERT | 0.266 | 0.545 | 0.675 | 0.818 | 0.325 | 0.398 |
+  | BGE-Reranker-v2-M3, raw/all languages | 0.160 | 0.504 | 0.672 | -- | -- | 0.313 |
+
+- The three-representation BGE-M3 fusion is the strongest first-stage
+  configuration: relative to the MiniLM baseline it adds 4.6 points at
+  Hit@1, 5.2 at Hit@5, 4.4 at Hit@10, and 0.048 MRR. Natural-language query
+  variants score 0.209--0.228 Hit@1 and therefore underperform the original
+  metric-keyword queries. Max length 2,048 and 8,192 are nearly identical.
+  The generic reranker hurts Top-1/MRR by promoting metric-index pages. Thai
+  remains the main bottleneck (Hit@10 0.281); Korean and Japanese show the
+  clearest Top-1 gains (0.216 to 0.373 and 0.182 to 0.236, respectively).
+
+## Completed GPT-5.4-mini multimodal Task 2 run (2026-09-01)
+
+- Scope: all 793 non-Chinese test rows (English 201, French 192, Japanese
+  130, Korean 149, Thai 121), using the best existing retrieval examples,
+  the target page rendered at 96 DPI with low image detail, and extracted text.
+- Model: `gpt-5.4-mini` via the OpenAI Responses API; few-shot examples were
+  text-only and only the target page image was supplied.
+- Completion check: 793/793 rows, 0 errors, 0 missing and 0 extra rows after
+  the API-free score-and-merge cross-check. Accuracy/Micro F1 = 0.6217 and
+  Macro F1 = 0.5748. Per-class F1 is 0.6266 (`yes`), 0.3686 (`yes but not
+  complete`), and 0.7292 (`no`).
+- Per-language Macro F1: English 0.5802, French 0.5825, Japanese 0.5555,
+  Korean 0.6321, Thai 0.4864. The completed trace reports an estimated API
+  cost of US$1.3562; this value is retained for reproducibility rather than
+  used as a performance criterion.

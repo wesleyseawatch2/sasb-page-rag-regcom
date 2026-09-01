@@ -40,8 +40,10 @@ items below are explicitly **blocked** and are listed as such rather than marked
 - [ ] **Blocked:** official Subtask 1 evaluator and gold-page-set contract confirmation from the
   task organizers (`docs/TASK1_VLM_PLAN.md` §1's stated claim boundary). This is the only item
   that blocks calling any Task 1 number "official."
-- [ ] **Pending:** complete the pre-specified local BGE-M3 + BGE-Reranker-v2-M3 ablation. The
-  implementation and GPU runbook are committed, but no BGE result is included in the paper yet.
+- [x] Completed the pre-specified local BGE-M3 + BGE-Reranker-v2-M3 ablation. The paper reports
+  dense, dense+sparse, dense+sparse+ColBERT, and reranker variants on the same 490 reconstructed
+  query groups (369 non-empty gold); all values remain retrieval measurements rather than official
+  Subtask 1 scores.
 - [ ] **Blocked:** human annotation of `docs/TASK1_ERROR_REVIEW_SAMPLE.csv`. The CSV exists (65
   rows, stratified) but every judgment column is intentionally blank; no inter-annotator agreement
   can be computed until a person annotates it.

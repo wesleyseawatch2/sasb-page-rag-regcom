@@ -1,0 +1,123 @@
+{
+  "evaluated": 793,
+  "accuracy": 0.6216897856242118,
+  "micro_f1": 0.6216897856242118,
+  "macro_f1": 0.5747937152145681,
+  "truth_counts": {
+    "yes": 315,
+    "yes but not complete": 138,
+    "no": 340
+  },
+  "pred_counts": {
+    "yes": 317,
+    "no": 321,
+    "yes but not complete": 155
+  },
+  "classification_report": {
+    "yes": {
+      "precision": 0.6246056782334385,
+      "recall": 0.6285714285714286,
+      "f1-score": 0.6265822784810127,
+      "support": 315.0
+    },
+    "yes but not complete": {
+      "precision": 0.34838709677419355,
+      "recall": 0.391304347826087,
+      "f1-score": 0.36860068259385664,
+      "support": 138.0
+    },
+    "no": {
+      "precision": 0.7507788161993769,
+      "recall": 0.7088235294117647,
+      "f1-score": 0.7291981845688351,
+      "support": 340.0
+    },
+    "accuracy": 0.6216897856242118,
+    "macro avg": {
+      "precision": 0.5745905304023363,
+      "recall": 0.5762331019364267,
+      "f1-score": 0.5747937152145681,
+      "support": 793.0
+    },
+    "weighted avg": {
+      "precision": 0.6306343070695587,
+      "recall": 0.6216897856242118,
+      "f1-score": 0.62568435646012,
+      "support": 793.0
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "yes",
+      "yes but not complete",
+      "no"
+    ],
+    "rows_gold_cols_pred": [
+      [
+        198,
+        65,
+        52
+      ],
+      [
+        56,
+        54,
+        28
+      ],
+      [
+        63,
+        36,
+        241
+      ]
+    ]
+  },
+  "sources": [
+    {
+      "path": "runs\\task2-openai-vlm-full\\predictions_793_gpt54mini_vlm.csv",
+      "rows": 793,
+      "langs": {
+        "english": 201,
+        "french": 192,
+        "japanese": 130,
+        "korean": 149,
+        "thai": 121
+      }
+    }
+  ],
+  "expected_truth_rows": 793,
+  "written_prediction_rows": 793,
+  "missing_count": 0,
+  "extra_count": 0,
+  "by_lang": {
+    "english": {
+      "evaluated": 201,
+      "accuracy": 0.6269,
+      "micro_f1": 0.6269,
+      "macro_f1": 0.5802
+    },
+    "french": {
+      "evaluated": 192,
+      "accuracy": 0.6354,
+      "micro_f1": 0.6354,
+      "macro_f1": 0.5825
+    },
+    "japanese": {
+      "evaluated": 130,
+      "accuracy": 0.6077,
+      "micro_f1": 0.6077,
+      "macro_f1": 0.5555
+    },
+    "korean": {
+      "evaluated": 149,
+      "accuracy": 0.6711,
+      "micro_f1": 0.6711,
+      "macro_f1": 0.6321
+    },
+    "thai": {
+      "evaluated": 121,
+      "accuracy": 0.5455,
+      "micro_f1": 0.5455,
+      "macro_f1": 0.4864
+    }
+  },
+  "predictions_path": "artifacts\\metrics\\task2_openai_vlm_predictions.csv"
+}
