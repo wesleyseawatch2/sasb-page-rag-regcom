@@ -125,8 +125,9 @@ using cached VLM reranking traces:
   languages for this pipeline's current retrieval configuration — consistent with §2's
   cross-system Japanese observation above, and worth comparing against Cierpa's per-language BM25
   numbers in a future revision once the retrieval configuration is frozen (see
-  `CLAUDE_PAPER_REVIEW.md` §6 for the unresolved fused-baseline discrepancy that currently blocks
-  treating any single one of these numbers as final).
+  `CLAUDE_PAPER_REVIEW.md` §6 — this was a genuine dense-retrieval-on/off configuration difference,
+  not an inconsistency, and has since been resolved by the dense-optimized run's completion; see
+  §3.5 below for what the retrieval configuration looks like now).
 - End-to-end label diagnostic (Top-1 selected page → 3-way label, `gpt-5.4-nano`, 490/490 traces,
   no API errors): predicted-label distribution `no` 301, `yes but not complete` 143, `yes` 46. Of
   these, only 74 selected pages join unambiguously to a truth row (the rest hit the
@@ -153,21 +154,61 @@ end-to-end numbers more than further tuning the verifier prompt would.
   Subtask 2 headline numbers by mistake.
 - An official, organizer-scored Task 1/Subtask 1 error sample for this repository's own pipeline.
 - Inter-annotator agreement for any of the three papers' qualitative error taxonomies — none of the
-  three reports it.
+  three reports it. This is exactly what the human-review CSV in §3.5 is for; agreement cannot be
+  computed until it is actually annotated by a person.
+
+### 3.5 Follow-up (2026-09-01): neighbor-expanded top-20 run and a stratified review sample
+
+Since §3.3 was written, `runs/task1-dense-optimized` finished its full VLM rerank (490/490,
+Hit@1 0.328, MRR 0.431 — see `EXPERIMENT_LOG.md`'s "Dense retrieval and full VLM reranking" entry)
+and a new, deeper-candidate run (`runs/task1-neighbor2`: dense retrieval + a `neighbor_window=2`
+page expansion + a doubled top-20 VLM candidate pool) started and is **still in progress**. Per the
+task instructions for this pass, `runs/task1-neighbor2/vlm-full20*` was never read directly; every
+number below comes from the new API-free script `src/task1/aggregate_neighbor2.py`.
+
+Snapshot at 2026-09-01 12:06, 183/490 queries complete (Chinese and English only so far; French,
+Japanese, Korean, Thai entirely pending — do **not** read the "overall" row below as a 6-language
+figure):
+
+| Scope | Fused Hit@1 | VLM Hit@1 | Fused MRR | VLM MRR | Candidate recall@10 |
+|---|---|---|---|---|---|
+| Overall (133 non-empty, 2 languages only) | 0.271 | 0.391 | 0.411 | 0.487 | 0.707 |
+| Chinese (84 non-empty) | 0.155 | 0.262 | 0.289 | 0.362 | 0.571 |
+| English (49 non-empty) | 0.469 | 0.612 | 0.620 | 0.702 | 0.939 |
+
+Mechanical Hit@1-transition category counts over the same 183 rows: `neither_top1` 37,
+`vlm_improved_top1` 21, `empty_gold` 50, `both_top1` 30, `candidate_recall_miss` 39,
+`vlm_degraded_top1` 6. Chinese's English-relative weakness on both fused and VLM Hit@1 is
+consistent with the CJK-retrieval difficulty already discussed for Japanese/Thai above; whether it
+holds once the harder Japanese/Thai/Korean queries are included remains to be seen and should not
+be assumed from this 2-language snapshot.
+
+A stratified (language x mechanical-category), human-review-only sample was built from this same
+snapshot: `docs/TASK1_ERROR_REVIEW_SAMPLE.csv` (65 rows, via
+`src/task1/build_error_review_sample.py`). It intentionally leaves the qualitative
+error-taxonomy columns from `TASK1_VLM_PLAN.md` §13 (candidate-generation miss, wrong ToC section,
+exact-vs-adjacent page, SASB index/reference page, evidence-spanning pages, topical-mention-only,
+table/OCR extraction failure, missing value/unit/denominator/scope/period/disaggregation,
+full-vs-partial boundary, ambiguous/conflicting gold, model JSON/normalization failure) **blank**
+for a human annotator — nothing in this pass pre-fills a judgment. Because the source run has only
+reached Chinese and English, the sample is currently 2-language only; rerunning the same command
+after `runs/task1-neighbor2` completes will regenerate it with full 6-language stratified coverage.
 
 ---
 
-## 4. Recommended next error-analysis steps (unchanged in priority from `TASK1_VLM_PLAN.md` §13)
+## 4. Recommended next error-analysis steps
 
-1. Run the stratified 50–80 case annotated sample across candidate-generation miss, wrong-section,
-   exact-vs-adjacent-page, index/reference-only page, evidence-spanning-pages, table-extraction
-   failure, and full-vs-partial boundary — the categories are already listed in the plan; only the
-   execution is pending.
-2. Reconcile the fused-baseline discrepancy noted in `CLAUDE_PAPER_REVIEW.md` §6 before treating
-   any Task 1 diagnostic number as stable enough to annotate against.
-3. Once `runs/task1-dense-optimized/vlm-full*` is finalized by its owner, distill it into a dated
-   `EXPERIMENT_LOG.md` entry (as previous runs were) so future paper text can cite the log rather
-   than the raw cache, keeping the same provenance discipline this document follows.
+1. ~~Run the stratified 50–80 case sample~~ — **started**: `docs/TASK1_ERROR_REVIEW_SAMPLE.csv`
+   (65 rows) exists with real, mechanically-categorized context, but (a) covers only Chinese/English
+   pending `runs/task1-neighbor2` completion, and (b) still needs a human to actually fill in the
+   qualitative error-taxonomy columns — nothing in this repository should claim inter-annotator
+   agreement or a quantified taxonomy until that happens.
+2. ~~Reconcile the fused-baseline discrepancy~~ — **done**, see `CLAUDE_PAPER_REVIEW.md` §6; it was
+   a dense-retrieval-on/off configuration difference, not an unresolved inconsistency.
+3. Once `runs/task1-neighbor2/vlm-full20-cache.jsonl` stops growing, rerun
+   `py src/task1/aggregate_neighbor2.py` and `py src/task1/build_error_review_sample.py`, then
+   distill the final numbers into a dated `EXPERIMENT_LOG.md` entry, replacing the "in progress"
+   framing used in §3.5 above and in `_claude.tex` §4.7.
 4. If a confusion matrix for the actual reported Gemini/GLM 793-row runs is wanted for the paper,
    regenerate it from the existing prediction CSVs with `src/task2/score_and_merge_predictions.py`
    — no new model calls required.

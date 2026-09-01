@@ -199,48 +199,59 @@ revision does, per instruction, as an explicit placeholder-bearing preliminary s
 
 ---
 
-## 6. Numbers that remain unverified or internally inconsistent (flag for authors)
+## 6. Numbers flagged in the previous review pass — now resolved or superseded
 
-- `runs/task1-dense-optimized/metrics-fused.json` (fused RRF baseline, 369 non-empty-gold groups):
-  Hit@1 **0.2195**, Hit@5 0.4932, Hit@10 0.6314, MRR 0.3503.
-- `docs/EXPERIMENT_LOG.md`, "Full VLM comparison/error analysis (2026-09-01)" entry, same
-  369-non-empty-group scope: fused baseline Hit@1 **0.192**, Hit@5 0.396, Hit@10 0.507, MRR 0.291.
+**Update (2026-09-01, follow-up pass):** the fused-baseline discrepancy flagged in the first
+review pass has been resolved by newly-completed work, not by this review picking a number.
+`docs/EXPERIMENT_LOG.md`'s "Dense retrieval and full VLM reranking (2026-09-01)" entry makes clear
+that **0.192** (Hit@1, 369 non-empty groups) and **0.220** (`runs/task1-dense-optimized/metrics-fused.json`,
+rounded from 0.2195) were never the same measurement: 0.192 is the fused baseline **without** dense
+retrieval, and 0.220 is the same fused baseline **with** the `paraphrase-multilingual-MiniLM-L12-v2`
+dense lane enabled — a genuine, documented configuration change (candidate recall was the intended
+target of enabling it), not an unreconciled inconsistency. That run has since gone on to complete
+its full VLM rerank (490/490 queries, Hit@1 0.328, MRR 0.431) and is now the most recent **complete**
+diagnostic in `EXPERIMENT_LOG.md`.
 
-  These two "fused, 369 non-empty groups" numbers **do not match each other**, which means at
-  least two different retrieval configurations (e.g., different indexing passes described in the
-  log's "Retrieval optimization diagnostic" entry) are both being called "the fused baseline" for
-  the same nominal scope. This was **not** resolved by this review — reconciling it would require
-  either re-running a pipeline stage or reading `src/task1/task1_pipeline.py`'s current (modified,
-  uncommitted) state, both out of scope for this pass. **Recommendation:** before quoting a single
-  "the Task 1 fused baseline is X" number anywhere public, freeze one configuration, tag it with a
-  run ID per the `EXPERIMENT_LOG.md` template, and re-derive both the "fused" and "VLM" numbers
-  from that one frozen run. The `_claude.tex` draft therefore quotes the `EXPERIMENT_LOG.md`
-  narrative numbers only (the more conservative, already-reviewed set) and adds a footnote flagging
-  this exact discrepancy rather than picking one silently.
-- `runs/task1-dense-optimized/vlm-full-cache.jsonl` was intentionally **not read** (excluded by
-  the task instructions), so no numbers from it appear anywhere in this review or in `_claude.tex`.
-  If its aggregate metrics have already been distilled into an `EXPERIMENT_LOG.md` entry (they
-  appear to be, under "Non-Chinese VLM reranking run" and "End-to-end VLM label diagnostic"), those
-  narrative numbers were used instead; if not yet distilled, the corresponding paper placeholder
-  should be filled in only after the repository owner (not this review) inspects that file.
+A newer run, `runs/task1-neighbor2` (top-20 candidates, `neighbor_window=2` page expansion, same
+dense-enabled fusion), was already **in progress** when this follow-up pass started and remains
+in progress (183/490 queries complete as of the 12:06 snapshot cited in `EXPERIMENT_LOG.md`'s
+newest entry). This review still did not read `runs/task1-neighbor2/vlm-full20*` directly, in
+line with the task instructions each time — all neighbor2 numbers anywhere in this project's docs
+or in `_claude.tex` were produced exclusively by the new API-free script
+`src/task1/aggregate_neighbor2.py`, which reads only `retrieval.jsonl` and the VLM cache file and
+writes its output under `artifacts/metrics/`, never into `runs/`.
+
+**Recommendation, updated:** once `runs/task1-neighbor2` finishes, rerun
+`py src/task1/aggregate_neighbor2.py` one more time and treat *that* run as the frozen
+configuration for the paper (it methodologically supersedes both the no-dense and the
+dense-optimized top-10 runs: dense retrieval, RRF-fused rules, and now a doubled top-20 candidate
+pool with neighbor-page expansion). Until then, cite the dense-optimized run's complete numbers as
+the primary diagnostic and the neighbor2 snapshot only as a labeled, partial, in-progress data
+point — exactly how `_claude.tex` §4.7 now presents them.
 
 ---
 
 ## 7. Recommendations for the authors
 
-1. Resolve the fused-baseline discrepancy in §6 before any external release.
-2. Decide, and record in `EXPERIMENT_LOG.md`, which retrieval configuration is "frozen" for the
-   paper — the plan document already anticipates this ("Baseline and VLM configurations are frozen
-   and reproducible" is listed under `TASK1_VLM_PLAN.md` §16 "Definition of done").
+1. ~~Resolve the fused-baseline discrepancy~~ — **done**, see §6 above; it was a genuine
+   dense-retrieval-on/off configuration difference, not an error.
+2. Once `runs/task1-neighbor2` completes, rerun `src/task1/aggregate_neighbor2.py` and record the
+   result as the frozen configuration in `EXPERIMENT_LOG.md`, per `TASK1_VLM_PLAN.md` §16
+   ("Definition of done").
 3. Confirm the official Subtask 1 evaluator and gold-page-set handling rules (empty-gold credit,
    multi-page gold sets) with the task organizers before reporting any Task 1 number as anything
-   other than diagnostic — this is the single blocking item per `TASK1_VLM_PLAN.md` §1.
+   other than diagnostic — this is the single blocking item per `TASK1_VLM_PLAN.md` §1, and remains
+   unresolved.
 4. Consider explicitly auditing whether the non-Chinese CSV split used for Subtask 2 shares
    document identities across train/test, the way CSCU did for the official Subtask 1 split
    (§3.1 above). If it does, the current "793 non-Chinese rows" framing should say so, the same way
    CSCU now frames its own numbers as "seen-document, unseen-query."
-5. If a stratified error-annotation pass (50–80 cases, ≥2 annotators, per `TASK1_VLM_PLAN.md` §13)
-   is run, it would let the paper upgrade its qualitative error taxonomy (already good) into a
-   quantified one, matching the rigor CSCU applied to its Subtask 1 comparison.
+5. A stratified error-annotation sample now exists (`docs/TASK1_ERROR_REVIEW_SAMPLE.csv`, 65 rows,
+   built by `src/task1/build_error_review_sample.py`), but it currently only has Chinese and
+   English coverage because `runs/task1-neighbor2` hadn't reached the other four languages yet at
+   sampling time. Rerun the same script after the run completes for full 6-language stratified
+   coverage, then have at least one human annotator fill in the (currently blank) error-taxonomy
+   columns before treating the taxonomy as quantified rather than qualitative.
 6. See `docs/CLAUDE_ERROR_ANALYSIS.md` for the consolidated, cross-method error taxonomy and
-   concrete diagnostic examples referenced above.
+   concrete diagnostic examples, and `docs/FINAL_SUBMISSION_CHECKLIST.md` /
+   `docs/FINAL_REPRODUCIBILITY.md` for the current submission-readiness state.
