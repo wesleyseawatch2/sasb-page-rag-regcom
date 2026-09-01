@@ -1,0 +1,184 @@
+sample_id,lang,report_stem,topic,metric_code,gold_pages,has_gold,candidate_recall_at10,fused_top1,fused_top5,fused_hit_at_1,fused_hit_at_5,fused_hit_at_10,fused_near_at_1,fused_reciprocal_rank,vlm_top1,vlm_top5,vlm_hit_at_1,vlm_hit_at_5,vlm_hit_at_10,vlm_near_at_1,vlm_reciprocal_rank,no_relevant_page,category
+248802454c38b4bfbf84,chinese,alchip,水管理,TC-SC-140a.1,32,True,True,31,31|32|29|30|33,0.0,1.0,1.0,1.0,0.5,31,31|32|33|29|30,0.0,1.0,1.0,1.0,0.5,False,neither_top1
+9df1172da2c4f1e468ad,chinese,alchip,製造之能源管理,,31,True,True,29,29|31|33|32|30,0.0,1.0,1.0,0.0,0.5,31,31|32|33|29|30,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+9f2360a68977289ab8c4,chinese,alchip,水管理,TC-SC-140a.1,32,True,True,31,31|32|29|30|33,0.0,1.0,1.0,1.0,0.5,32,32|31|29|30|33,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+a45840eb9674d07b1a25,chinese,alchip,水管理,TC-SC-140a.1,32,True,True,29,29|30|31|33|32,0.0,1.0,1.0,0.0,0.2,32,32|33|31|30|34,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+b03198cdfb091737bc16,chinese,alchip,勞工健康與安全,TC-SC-320a.1,,False,,29,29|30|31|40|44,,,,,,44,44|40|43|38|39,,,,,,False,empty_gold
+dd5972387b0ecc6e037e,chinese,alchip,製造之能源管理,,31,True,True,31,31|29|33|32|30,1.0,1.0,1.0,1.0,1.0,31,31|29|33|32|30,1.0,1.0,1.0,1.0,1.0,True,both_top1
+06f05bf13faa832d045d,chinese,esun,普惠金融與能力建構,,77,True,False,132,132|143|131|133|129,0.0,0.0,0.0,0.0,0.03571428571428571,194,194|193|132|131|129,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+076fa0e067c29f4f0b0c,chinese,esun,一般資訊,,14,True,True,198,198|75|195|14|193,0.0,1.0,1.0,0.0,0.25,75,75|194|198|193|74,0.0,0.0,0.0,0.0,0.08333333333333333,False,neither_top1
+2daad2ab367055c23cba,chinese,esun,一般資訊,,14,True,True,198,198|75|195|14|194,0.0,1.0,1.0,0.0,0.25,75,75|195|14|194|193,0.0,1.0,1.0,0.0,0.3333333333333333,True,neither_top1
+30dc9da4907e833d89a0,chinese,esun,一般資訊,,14,True,True,75,75|80|14|193|68,0.0,1.0,1.0,0.0,0.3333333333333333,75,75|195|14|80|193,0.0,1.0,1.0,0.0,0.3333333333333333,False,neither_top1
+3f160c246ec49f7097e3,chinese,esun,普惠金融與能力建構,FN-CB-240a.1,75,True,True,75,75|194|74|71|64,1.0,1.0,1.0,1.0,1.0,75,75|71|194|74|64,1.0,1.0,1.0,1.0,1.0,False,both_top1
+452c7b564ceff476f65b,chinese,esun,一般資訊,,14,True,True,198,198|195|115|194|138,0.0,0.0,1.0,0.0,0.1111111111111111,195,195|194|198|115|138,0.0,0.0,1.0,0.0,0.1111111111111111,True,neither_top1
+4e1a13414b336d525da8,chinese,esun,普惠金融與能力建構,FN-CB-240a.1,75,True,True,75,75|74|194|71|195,1.0,1.0,1.0,1.0,1.0,75,75|74|194|71|195,1.0,1.0,1.0,1.0,1.0,False,both_top1
+4f8bdbf96a1d8231c22d,chinese,esun,一般資訊,,14,True,True,80,80|193|14|75|68,0.0,1.0,1.0,0.0,0.3333333333333333,80,80|193|14|75|68,0.0,1.0,1.0,0.0,0.3333333333333333,True,neither_top1
+5e3fb5b305b96f0140b8,chinese,esun,商業倫理,,97,True,False,195,195|104|135|136|138,0.0,0.0,0.0,0.0,0.0,195,195|104|135|136|138,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+791aeca0d93957e6e5ef,chinese,esun,商業倫理,,97,True,False,138,138|130|137|129|119,0.0,0.0,0.0,0.0,0.0,138,138|130|137|129|119,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+80776b5d0ac910030499,chinese,esun,一般資訊,,14,True,True,198,198|195|135|115|194,0.0,0.0,1.0,0.0,0.16666666666666666,195,195|198|194|135|115,0.0,0.0,1.0,0.0,0.16666666666666666,False,neither_top1
+a8c999a993563a9e6022,chinese,esun,一般資訊,,14,True,False,80,80|75|193|195|68,0.0,0.0,0.0,0.0,0.038461538461538464,75,75|80|193|195|68,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+b210cf230d476bc53a6c,chinese,esun,將環境、社會及治理因素納入信用分析,FN-CB-410a.2,58,True,True,58,58|194|7|8|37,1.0,1.0,1.0,1.0,1.0,58,58|39|38|59|64,1.0,1.0,1.0,1.0,1.0,False,both_top1
+bba2d70d4f0dc09f69f3,chinese,esun,一般資訊,,14,True,False,198,198|195|193|194|135,0.0,0.0,0.0,0.0,0.0,198,198|195|193|194|135,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+beae732cfc3b01ff38f6,chinese,esun,一般資訊,,14,True,True,80,80|75|193|14|68,0.0,1.0,1.0,0.0,0.25,75,75|80|14|191|193,0.0,1.0,1.0,0.0,0.3333333333333333,False,neither_top1
+caf169832bf6d03ccd32,chinese,esun,普惠金融與能力建構,,77,True,False,109,109|115|132|114|134,0.0,0.0,0.0,0.0,0.0,109,109|115|132|114|134,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+db022f6b9cef8fdc832a,chinese,esun,一般資訊,,14,True,True,80,80|193|14|75|195,0.0,1.0,1.0,0.0,0.3333333333333333,75,75|195|68|194|193,0.0,0.0,1.0,0.0,0.16666666666666666,False,neither_top1
+841d178137ad30b5ec5b,chinese,fpcc,溫室氣體排放,,57,True,True,123,123|137|118|129|130,0.0,0.0,1.0,0.0,0.125,57,57|123|129|137|118,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+897b5595ce02401ff438,chinese,fpcc,法律及監管環境管理,EM-RM-530a.1,38|39|40|42,True,False,125,125|10|117|12|46,0.0,0.0,0.0,0.0,0.038461538461538464,125,125|11|117|10|12,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+914c3d4375402a23082a,chinese,fpcc,溫室氣體排放,,56,True,False,123,123|137|118|129|136,0.0,0.0,0.0,0.0,0.0,129,129|137|123|136|118,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+d2640a7357ceeb8e1429,chinese,fpcc,有害材料管理,EM-RM-150a.1,67,True,False,124,124|123|31|125|46,0.0,0.0,0.0,0.0,0.06666666666666667,124,124|136|123|31|125,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+d5de42da7576d460f285,chinese,fpcc,勞工健康與安全,EM-RM-320a.2,79|81,True,False,125,125|117|85|31|83,0.0,0.0,0.0,0.0,0.0,83,83|85|87|86|84,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+fcca5dfb8842d339ef29,chinese,fpcc,溫室氣體排放,EM-RM-110a.2,56|57|58,True,False,123,123|44|55|46|117,0.0,0.0,0.0,0.0,0.0,54,54|47|45|56|53,0.0,1.0,1.0,0.0,0.25,False,candidate_recall_miss
+1835a8a50b2e52899d66,chinese,gtg,Energy Affordability,IF-GU-240a.1,,False,,52,52|54|41|51|33,,,,,,52,52|54|41|51|33,,,,,,True,empty_gold
+1c6027226e1fad89e1c1,chinese,gtg,Integrity of Gas Delivery Infrastructure,IF-GU-540a.1,,False,,33,33|54|27|52|29,,,,,,52,52|33|30|54|27,,,,,,False,empty_gold
+217b5467197b44a5050d,chinese,gtg,Activity Metrics,IF-GU-000.C,,False,,52,52|30|33|12|44,,,,,,52,52|30|33|12|44,,,,,,True,empty_gold
+2bdf296539618f3dccaf,chinese,gtg,Activity Metrics,IF-GU-000.A,,False,,52,52|41|39|44|45,,,,,,33,33|52|41|39|44,,,,,,False,empty_gold
+412c5d2deb01e84befa2,chinese,gtg,Integrity of Gas Delivery Infrastructure,IF-GU-540a.4,29|30|32,True,True,52,52|54|33|27|31,0.0,0.0,1.0,0.0,0.125,52,52|54|33|27|31,0.0,0.0,1.0,0.0,0.125,True,neither_top1
+49fb7153e06aedceb2fe,chinese,gtg,Energy Affordability,IF-GU-240a.3,,False,,52,52|40|33|54|41,,,,,,52,52|40|33|54|41,,,,,,True,empty_gold
+51517c0b380c8853c513,chinese,gtg,Activity Metrics,IF-GU-000.B,,False,,52,52|33|38|12|30,,,,,,52,52|33|38|12|30,,,,,,False,empty_gold
+51f1b3e59a3ccba9b62a,chinese,gtg,Activity Metrics,IF-GU-000.B,,False,,52,52|33|39|30|12,,,,,,52,52|33|39|30|12,,,,,,True,empty_gold
+589088d850c91597c388,chinese,gtg,Integrity of Gas Delivery Infrastructure,IF-GU-540a.1,,False,,33,33|54|27|52|29,,,,,,52,52|33|27|30|29,,,,,,False,empty_gold
+6a8c4ff0a242687137fb,chinese,gtg,Activity Metrics,IF-GU-000.A,,False,,52,52|41|39|44|45,,,,,,52,52|41|39|44|45,,,,,,False,empty_gold
+71b1be64304c5b107915,chinese,gtg,End-Use Efficiency,IF-GU-420a.2,,False,,52,52|41|54|33|39,,,,,,52,52|41|54|33|39,,,,,,True,empty_gold
+7fceb86040e6aa782e4c,chinese,gtg,Energy Affordability,IF-GU-240a.1,,False,,52,52|54|41|33|40,,,,,,52,52|54|41|33|40,,,,,,True,empty_gold
+830241f03b1b5a2cd1fe,chinese,gtg,Integrity of Gas Delivery Infrastructure,IF-GU-540a.2,,False,,33,33|54|52|30|31,,,,,,52,52|33|30|28|29,,,,,,False,empty_gold
+86aa461b0657239b9afe,chinese,gtg,Integrity of Gas Delivery Infrastructure,IF-GU-540a.2,,False,,33,33|52|54|30|31,,,,,,33,33|52|54|30|31,,,,,,True,empty_gold
+8a629981505312004cb2,chinese,gtg,Activity Metrics,IF-GU-000.B,,False,,52,52|33|12|39|30,,,,,,52,52|33|12|39|30,,,,,,False,empty_gold
+8b442a632f061d6dec09,chinese,gtg,Energy Affordability,IF-GU-240a.3,,False,,52,52|38|54|41|50,,,,,,52,52|38|54|41|50,,,,,,True,empty_gold
+8f369bf60d5f40ff42f2,chinese,gtg,Activity Metrics,IF-GU-000.A,,False,,52,52|41|39|44|45,,,,,,33,33|52|41|39|44,,,,,,False,empty_gold
+a743f5d239b7b13e4248,chinese,gtg,Energy Affordability,IF-GU-240a.4,,False,,52,52|33|54|42|35,,,,,,52,52|33|54|42|35,,,,,,True,empty_gold
+bcc995e590728abad9b2,chinese,gtg,Integrity of Gas Delivery Infrastructure,IF-GU-540a.1,,False,,54,54|33|52|27|29,,,,,,52,52|35|29|42|27,,,,,,False,empty_gold
+c6062ddafab0db8a96ff,chinese,gtg,Energy Affordability,IF-GU-240a.1,,False,,52,52|54|41|51|40,,,,,,52,52|54|41|51|40,,,,,,True,empty_gold
+efa0ead125159b80ddd8,chinese,gtg,Activity Metrics,IF-GU-000.B,,False,,52,52|33|12|39|30,,,,,,52,52|33|12|39|30,,,,,,False,empty_gold
+f0043dd3f1ef117bc445,chinese,gtg,Integrity of Gas Delivery Infrastructure,IF-GU-540a.2,,False,,33,33|52|54|30|31,,,,,,52,52|29|28|33|54,,,,,,False,empty_gold
+4702c5404d863e1c9e81,chinese,inx,材料取得,TC-SC-440a.1,70,True,True,174,174|70|67|130|152,0.0,1.0,1.0,0.0,0.5,70,70|69|67|127|174,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+683c9ddef4d92b35892f,chinese,inx,供應鏈管理,,69,True,False,170,170|172|171|174|121,0.0,0.0,0.0,0.0,0.05,174,174|171|172|170|173,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+6dd8c057d87af2fb9492,chinese,inx,供應鏈管理,,69,True,False,170,170|121|130|171|167,0.0,0.0,0.0,0.0,0.05555555555555555,170,170|121|130|171|167,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+719cd29975ae456e1d68,chinese,inx,供應鏈管理,,69,True,False,170,170|121|130|171|167,0.0,0.0,0.0,0.0,0.05555555555555555,170,170|171|167|169|168,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+84039f11f928fe883eac,chinese,inx,供應鏈管理,,69,True,False,170,170|172|130|171|167,0.0,0.0,0.0,0.0,0.05263157894736842,174,174|170|172|130|171,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+c1fa043be97f6421fb87,chinese,inx,供應鏈管理,,69,True,False,67,67|170|172|174|121,0.0,0.0,0.0,0.0,0.05,174,174|67|121|170|172,0.0,0.0,1.0,0.0,0.1111111111111111,False,candidate_recall_miss
+da7820ce83cf834a6a80,chinese,inx,員工多元及包容性,TC-SC-330a.1,84,True,False,69,69|91|106|174|97,0.0,0.0,0.0,0.0,0.0,69,69|91|106|174|97,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+ded84d16a6c52b620891,chinese,inx,員工多元及包容性,TC-SC-330a.1,84,True,False,69,69|91|106|174|67,0.0,0.0,0.0,0.0,0.0,69,69|91|106|174|67,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+2f0d501707150c50147d,chinese,kye,員工多元及包容性,TC-SC-330a.1,,False,,73,73|77|80|76|72,,,,,,77,77|80|76|72|6,,,,,,True,empty_gold
+433fe03fd13edfdbc835,chinese,kye,員工多元及包容性,TC-SC-330a.1,22,True,False,73,73|77|80|76|72,0.0,0.0,0.0,0.0,0.0,75,75|77|80|76|73,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+fd7ea4f0c26bac7af415,chinese,kye,材料取得,TC-SC-440a.1,,False,,68,68|67|57|92|70,,,,,,54,54|92|57|68|67,,,,,,False,empty_gold
+86c4136268c386bb09dd,chinese,largan,員工多元及包容性,TC-SC-330a.1,75,True,True,104,104|76|75|105|72,0.0,1.0,1.0,0.0,0.3333333333333333,75,75|76|105|72|74,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+879f4ccca3b0168546ea,chinese,largan,員工多元及包容性,TC-SC-330a.1,75,True,True,104,104|75|105|76|72,0.0,1.0,1.0,0.0,0.5,75,75|76|105|104|74,1.0,1.0,1.0,1.0,1.0,True,vlm_improved_top1
+d1b6a6f27c23b9f59553,chinese,largan,員工多元及包容性,TC-SC-330a.1,75,True,True,104,104|105|75|76|72,0.0,1.0,1.0,0.0,0.3333333333333333,75,75|76|73|104|105,1.0,1.0,1.0,1.0,1.0,True,vlm_improved_top1
+f756a038fe92c49c5dae,chinese,largan,產品安全,TC-SC-410a.1,40,True,False,58,58|17|105|57|53,0.0,0.0,0.0,0.0,0.0,58,58|17|105|57|53,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+1b25879862e5e4fc7141,chinese,mfhc,資料安全,,40,True,False,69,69|56|70|66|57,0.0,0.0,0.0,0.0,0.0,69,69|56|70|66|57,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+2582bba597c91b02e937,chinese,mfhc,一般資訊,FN-CB-000.B,34,True,True,34,34|86|7|82|35,1.0,1.0,1.0,1.0,1.0,86,86|34|7|82|35,0.0,1.0,1.0,0.0,0.5,False,vlm_degraded_top1
+30746a55421ccf91d297,chinese,mfhc,資料安全,,40,True,False,69,69|73|56|66|95,0.0,0.0,0.0,0.0,0.041666666666666664,69,69|73|56|66|95,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+38c836092dc2e68f4343,chinese,mfhc,一般資訊,FN-CB-000.A,34,True,True,7,7|86|34|35|82,0.0,1.0,1.0,0.0,0.3333333333333333,92,92|6|87|84|88,0.0,0.0,0.0,0.0,0.06666666666666667,True,neither_top1
+48a748982794bdd26320,chinese,mfhc,一般資訊,FN-CB-000.B,34,True,True,92,92|35|86|34|42,0.0,1.0,1.0,0.0,0.25,34,34|92|35|86|42,1.0,1.0,1.0,1.0,1.0,True,vlm_improved_top1
+6be02c68fb62c73ae06d,chinese,mfhc,將環境、社會及治理因素納入信用分析,FN-CB-410a.2,30,True,True,92,92|82|83|28|30,0.0,1.0,1.0,0.0,0.2,92,92|82|83|28|30,0.0,1.0,1.0,0.0,0.2,False,neither_top1
+6dc521fe128522f48bb1,chinese,mfhc,普惠金融與能力建構,FN-CB-240a.1,34,True,False,92,92|33|60|82|86,0.0,0.0,0.0,0.0,0.05,34,34|31|32|33|60,1.0,1.0,1.0,1.0,1.0,False,candidate_recall_miss
+77ccc6ec4e06c4c042d0,chinese,mfhc,普惠金融與能力建構,FN-CB-240a.2,34,True,True,33,33|92|82|86|13,0.0,0.0,1.0,1.0,0.16666666666666666,33,33|92|82|86|13,0.0,0.0,1.0,1.0,0.16666666666666666,True,neither_top1
+98c28c8aba20cc5e1ea1,chinese,mfhc,一般資訊,FN-CB-000.B,34,True,True,34,34|86|82|35|83,1.0,1.0,1.0,1.0,1.0,34,34|86|82|35|83,1.0,1.0,1.0,1.0,1.0,False,both_top1
+9e0aa44b8c1f76943ad9,chinese,mfhc,一般資訊,FN-CB-000.A,34,True,True,42,42|86|34|92|16,0.0,1.0,1.0,0.0,0.3333333333333333,92,92|61|42|86|34,0.0,1.0,1.0,0.0,0.2,True,neither_top1
+a1574825364597df8164,chinese,mfhc,一般資訊,FN-CB-000.A,34,True,True,42,42|86|34|92|7,0.0,1.0,1.0,0.0,0.3333333333333333,92,92|42|86|41|34,0.0,1.0,1.0,0.0,0.2,True,neither_top1
+a4f3b103d4773e8b5c89,chinese,mfhc,普惠金融與能力建構,FN-CB-240a.1,34,True,True,33,33|92|82|86|83,0.0,0.0,1.0,1.0,0.16666666666666666,13,13|33|34|81|31,0.0,1.0,1.0,0.0,0.3333333333333333,False,neither_top1
+b72fae7297b174804da7,chinese,mfhc,資料安全,,39|40,True,False,69,69|70|56|55|79,0.0,0.0,0.0,0.0,0.05,69,69|70|56|55|79,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+b8efde469e427e63d8ca,chinese,mfhc,資料安全,,40,True,False,56,56|66|67|72|69,0.0,0.0,0.0,0.0,0.045454545454545456,56,56|66|67|72|69,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+b962c92b6e01fffff12d,chinese,mfhc,普惠金融與能力建構,FN-CB-240a.2,34,True,False,92,92|33|82|6|60,0.0,0.0,0.0,0.0,0.047619047619047616,92,92|33|82|6|60,0.0,0.0,0.0,0.0,0.07142857142857142,True,candidate_recall_miss
+dc80f940f841089616d6,chinese,mfhc,一般資訊,FN-CB-000.B,34,True,True,34,34|86|42|92|31,1.0,1.0,1.0,1.0,1.0,86,86|34|42|92|31,0.0,1.0,1.0,0.0,0.5,False,vlm_degraded_top1
+eccac6748edc6800f408,chinese,mfhc,一般資訊,FN-CB-000.B,34,True,True,34,34|86|82|35|83,1.0,1.0,1.0,1.0,1.0,34,34|86|82|35|83,1.0,1.0,1.0,1.0,1.0,False,both_top1
+f39e92d7d085f27d9994,chinese,mfhc,一般資訊,FN-CB-000.A,34,True,True,86,86|34|35|82|83,0.0,1.0,1.0,0.0,0.5,92,92|86|34|35|82,0.0,1.0,1.0,0.0,0.3333333333333333,True,neither_top1
+429c9cab6bf9262dcb3d,chinese,npc,勞工健康與安全,TC-SC-320a.1,76,True,False,84,84|97|65|98|91,0.0,0.0,0.0,0.0,0.07142857142857142,97,97|65|62|90|84,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+45e18853cdbe16143a34,chinese,npc,水管理,TC-SC-140a.1,55,True,True,55,55|101|97|63|54,1.0,1.0,1.0,1.0,1.0,55,55|62|101|97|63,1.0,1.0,1.0,1.0,1.0,False,both_top1
+51fc7dd50483d59855e9,chinese,npc,水管理,TC-SC-140a.1,55,True,True,55,55|101|97|63|87,1.0,1.0,1.0,1.0,1.0,55,55|62|97|100|101,1.0,1.0,1.0,1.0,1.0,False,both_top1
+99eeb6d4ed3eef482231,chinese,npc,勞工健康與安全,TC-SC-320a.2,,False,,79,79|98|84|101|78,,,,,,79,79|46|84|85|101,,,,,,False,empty_gold
+a9187e160989e5d14c8c,chinese,npc,勞工健康與安全,TC-SC-320a.2,,False,,79,79|98|84|101|78,,,,,,79,79|16|98|84|101,,,,,,False,empty_gold
+03dbd00e2be7a8ebc95c,chinese,pegavision,Activity Metrics,HC-MS-000.A,,False,,57,57|31|25|30|16,,,,,,32,32|25|31|30|29,,,,,,True,empty_gold
+0e0e8cf374ce4af1620f,chinese,pegavision,Product Design & Lifecycle Management,HC-MS-410a.1,49,True,True,57,57|46|47|22|28,0.0,0.0,1.0,0.0,0.14285714285714285,57,57|21|56|20|23,0.0,0.0,0.0,0.0,0.06666666666666667,False,neither_top1
+4fbf0bb2a56505fe4d78,chinese,pegavision,Supply Chain Management,HC-MS-430a.2,49,True,True,57,57|46|22|31|21,0.0,0.0,1.0,0.0,0.14285714285714285,57,57|23|48|49|47,0.0,1.0,1.0,0.0,0.25,False,neither_top1
+97397fa6bf9876ed9fb9,chinese,pegavision,Ethical Marketing,HC-MS-270a.1,,False,,57,57|23|22|47|46,,,,,,57,57|24|23|22|47,,,,,,True,empty_gold
+a607a61dd01d6c649c43,chinese,pegavision,Product Safety,HC-MS-240a.3,,False,,57,57|23|26|43|40,,,,,,57,57|43|26|21|42,,,,,,False,empty_gold
+b62d78163142a1943798,chinese,pegavision,Affordability & Pricing,HC-MS-250a.1,,False,,57,57|34|35|40|41,,,,,,57,57|34|35|40|41,,,,,,False,empty_gold
+c48ca47e9110bed4cf6b,chinese,pegavision,Product Safety,HC-MS-240a.3,,False,,23,23|57|40|43|26,,,,,,57,57|23|26|47|22,,,,,,True,empty_gold
+e18083431ee3ede8f49f,chinese,pegavision,Business Ethics,HC-MS-510a.1,,False,,57,57|43|35|56|55,,,,,,43,43|35|56|55|39,,,,,,True,empty_gold
+e1bff43231bea0c80507,chinese,pegavision,Product Safety,HC-MS-240a.2,,False,,57,57|23|22|47|26,,,,,,57,57|23|22|47|26,,,,,,True,empty_gold
+ee2c984c1cd669ebdff5,chinese,pegavision,Supply Chain Management,HC-MS-430a.3,49,True,True,57,57|31|46|49|47,0.0,1.0,1.0,0.0,0.25,50,50|48|49|47|57,0.0,1.0,1.0,1.0,0.3333333333333333,False,neither_top1
+f64ca5ae603d7ac5ee1c,chinese,pegavision,Product Safety,HC-MS-240a.2,,False,,57,57|23|22|47|26,,,,,,57,57|23|22|47|26,,,,,,True,empty_gold
+0874e8503c17740090d4,chinese,psi,材料取得,TC-SC-440a.1,44,True,True,79,79|44|5|78|57,0.0,1.0,1.0,0.0,0.5,44,44|42|45|46|17,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+977fb80b768ae44c1eeb,chinese,psi,廢棄物管理,,55,True,True,54,54|46|84|2|55,0.0,1.0,1.0,1.0,0.2,54,54|55|18|56|48,0.0,1.0,1.0,1.0,0.5,False,neither_top1
+9f8f1546a35429aff0cb,chinese,psi,勞工健康與安全,TC-SC-320a.1,,False,,78,78|79|5|57|44,,,,,,78,78|74|71|75|76,,,,,,False,empty_gold
+a59b89d660b2bdfc3009,chinese,psi,水管理,TC-SC-140a.1,52,True,True,78,78|80|52|79|18,0.0,1.0,1.0,0.0,0.3333333333333333,52,52|53|56|80|78,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+c5837a23191559acce9e,chinese,psi,廢棄物管理,,55,True,True,55,55|53|80|51|46,1.0,1.0,1.0,1.0,1.0,54,54|55|53|80|51,0.0,1.0,1.0,1.0,0.5,False,vlm_degraded_top1
+c80ec6b446a1b53dc268,chinese,psi,水管理,TC-SC-140a.1,52,True,True,78,78|80|52|79|18,0.0,1.0,1.0,0.0,0.3333333333333333,52,52|53|80|56|78,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+3c095cba3aaf07325dc1,chinese,spt,"Employee Recruitment, Development & Retention",,68,True,False,1,1,0.0,0.0,0.0,0.0,0.0,1,1,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+4955d4323e532e85d09b,chinese,spt,"Employee Recruitment, Development & Retention",HC-BP-330a.2,65,True,False,1,1,0.0,0.0,0.0,0.0,0.0,1,1,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+985bef32aef227d8689c,chinese,spt,"Employee Recruitment, Development & Retention",,68,True,False,1,1,0.0,0.0,0.0,0.0,0.0,1,1,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+4c7021e8b1f4b5094d21,chinese,standard,Access to Medicines,HC-BP-210a.2,,False,,56,56|57|59|50|55,,,,,,56,56|57|59|50|55,,,,,,False,empty_gold
+c6f321213d1f314943f3,chinese,standard,"Employee Recruitment, Development & Retention",HC-BP-330a.2,,False,,64,64|65|59|58|62,,,,,,59,59|64|65|62|61,,,,,,False,empty_gold
+06820c3d82227985ff7f,chinese,tcfh,普惠金融與能力建構,FN-CB-240a.2,,False,,183,183|175|182|107|189,,,,,,183,183|175|182|107|189,,,,,,True,empty_gold
+0e8a3b6f1216f2139e9c,chinese,tcfh,商業倫理,FN-CB-510a.2,57,True,False,175,175|190|189|187|188,0.0,0.0,0.0,0.0,0.0,190,190|189|187|188|175,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+2d2d45622e5aacae08c9,chinese,tcfh,將環境、社會及治理因素納入信用分析,FN-CB-410a.2,86|88|91,True,True,175,175|87|89|86|94,0.0,1.0,1.0,0.0,0.25,175,175|88|89|87|86,0.0,1.0,1.0,0.0,0.5,False,neither_top1
+6e46bc48d7eb1a2796b7,chinese,tcfh,系統性風險管理,FN-CB-550a.2,60|61,True,False,87,87|89|175|28|38,0.0,0.0,0.0,0.0,0.0,89,89|87|175|27|28,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+8871355ed3fe7c9955a3,chinese,tcfh,普惠金融與能力建構,FN-CB-240a.2,,False,,183,183|175|107|106|108,,,,,,183,183|175|184|182|185,,,,,,True,empty_gold
+bd04fcdcc4ed2631bbe5,chinese,tcfh,普惠金融與能力建構,FN-CB-240a.1,,False,,183,183|175|128|182|107,,,,,,175,175|183|107|108|99,,,,,,False,empty_gold
+ded71f1ae5ed182ae5b5,chinese,tcfh,普惠金融與能力建構,FN-CB-240a.1,,False,,183,183|107|105|175|106,,,,,,183,183|175|184|107|105,,,,,,False,empty_gold
+0c99967238f3168db8bb,chinese,tsmc,製造之能源管理,TC-SC-130a.1,102,True,False,19,19|222|96|218|233,0.0,0.0,0.0,0.0,0.058823529411764705,228,228|223|220|19|222,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+4c421a68ea2b94f3758c,chinese,tsmc,水管理,TC-SC-140a.1,,False,,109,109|112|19|110|115,,,,,,112,112|109|108|110|115,,,,,,False,empty_gold
+4f394ee4c59d4233ef9a,chinese,tsmc,溫室氣體排放,TC-SC-110a.1,97,True,True,97,97|19|107|228|133,1.0,1.0,1.0,1.0,1.0,228,228|223|18|97|99,0.0,1.0,1.0,0.0,0.25,False,vlm_degraded_top1
+5b863040d9e5a876a227,chinese,tsmc,溫室氣體排放,TC-SC-110a.2,96|97,True,True,19,19|107|94|96|97,0.0,1.0,1.0,0.0,0.25,19,19|94|97|96|95,0.0,1.0,1.0,0.0,0.3333333333333333,False,neither_top1
+787e9c109587cff313d0,chinese,tsmc,勞工健康與安全,TC-SC-320a.1,163|164|165|175|176,True,False,19,19|57|177|65|232,0.0,0.0,0.0,0.0,0.09090909090909091,19,19|173|178|175|96,0.0,1.0,1.0,0.0,0.25,False,candidate_recall_miss
+bccd1d581d779616c860,chinese,tsmc,製造之能源管理,TC-SC-130a.1,102,True,False,19,19|222|96|233|223,0.0,0.0,0.0,0.0,0.07692307692307693,228,228|222|218|223|19,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+d524b5cfe619d36cdea4,chinese,tsmc,產品生命週期管理,,43,True,True,43,43|150|1|121|168,1.0,1.0,1.0,1.0,1.0,43,43|150|1|121|168,1.0,1.0,1.0,1.0,1.0,True,both_top1
+e97706277c47b3b95f97,chinese,tsmc,材料取得,,82,True,False,1,1|167|169|214|166,0.0,0.0,0.0,0.0,0.0,166,166|214|1|167|169,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+17089ef65765861d679c,english,06-21_gb-_lvmh_rse2022,Management of Chemicals in Products,CG-AA-250a.2,,False,,106,106|82|130|155|41,,,,,,106,106|132|81|130|155,,,,,,False,empty_gold
+565fa568563991955cd9,english,06-21_gb-_lvmh_rse2022,Labour Conditions in the Supply Chain,CG-AA-430b.1,128|129|130|132,True,True,130,130|128|132|129|106,1.0,1.0,1.0,1.0,1.0,130,130|128|132|129|106,1.0,1.0,1.0,1.0,1.0,True,both_top1
+67d0d362a56e9cfac501,english,06-21_gb-_lvmh_rse2022,Labour Conditions in the Supply Chain,CG-AA-430b.1,130|132,True,True,130,130|129|128|132|105,1.0,1.0,1.0,1.0,1.0,132,132|130|129|128|105,1.0,1.0,1.0,1.0,1.0,False,both_top1
+ae9637b268357978cf24,english,06-21_gb-_lvmh_rse2022,Management of Chemicals in Products,CG-AA-250a.1,86,True,False,106,106|130|155|129|34,0.0,0.0,0.0,0.0,0.0,106,106|105|129|128|130,0.0,0.0,0.0,0.0,0.0,False,candidate_recall_miss
+b6956d1b9a7a29b6f7bf,english,06-21_gb-_lvmh_rse2022,Raw Materials Sourcing,CG-AA-440a.4,,False,,79,79|150|147|27|99,,,,,,150,150|79|99|27|154,,,,,,False,empty_gold
+c2b99af2a4ca3d2681e8,english,06-21_gb-_lvmh_rse2022,Raw Materials Sourcing,CG-AA-440a.3,77|91|94|95|102|105|110|111,True,True,105,105|79|27|130|82,1.0,1.0,1.0,1.0,1.0,150,150|89|105|82|99,0.0,1.0,1.0,0.0,0.3333333333333333,False,vlm_degraded_top1
+d83514208184317346b8,english,06-21_gb-_lvmh_rse2022,Labour Conditions in the Supply Chain,CG-AA-430b.3,32|55|77|83|97|98|99|102|103|128,True,True,106,106|130|128|51|41,0.0,1.0,1.0,0.0,0.3333333333333333,129,129|128|130|51|132,0.0,1.0,1.0,1.0,0.5,False,neither_top1
+f98f4adc1cf9df5df847,english,06-21_gb-_lvmh_rse2022,Labour Conditions in the Supply Chain,CG-AA-430b.2,32|132,True,True,130,130|132|128|129|153,0.0,1.0,1.0,0.0,0.5,132,132|130|128|129|153,1.0,1.0,1.0,1.0,1.0,True,vlm_improved_top1
+06a55b5f61d8a026b784,english,2022-baytex-esg-report-final,Reserves Valuation & Capital Expenditures,EM-EP-420a.3,54,True,True,54,54|52|59|55|58,1.0,1.0,1.0,1.0,1.0,54,54|52|59|55|58,1.0,1.0,1.0,1.0,1.0,False,both_top1
+08299bc8465cfecfc415,english,2022-baytex-esg-report-final,Biodiversity Impacts,EM-EP-160a.3,53,True,True,53,53|54|15|14|70,1.0,1.0,1.0,1.0,1.0,53,53|55|56|52|51,1.0,1.0,1.0,1.0,1.0,False,both_top1
+1935926bc83b1885753e,english,2022-baytex-esg-report-final,Community Relations,EM-EP-210b.2,54,True,True,52,52|54|53|20|46,0.0,1.0,1.0,0.0,0.5,54,54|52|53|20|46,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+42a2aed39f9da632fc46,english,2022-baytex-esg-report-final,Critical Incident Risk Management,EM-EP-540a.2,55,True,True,55,55|70|77|29|16,1.0,1.0,1.0,1.0,1.0,55,55|70|77|29|16,1.0,1.0,1.0,1.0,1.0,True,both_top1
+55984499e9da70c24c35,english,2022-baytex-esg-report-final,Water Management,EM-EP-140a.1,53,True,True,53,53|24|17|47|48,1.0,1.0,1.0,1.0,1.0,53,53|24|47|17|48,1.0,1.0,1.0,1.0,1.0,False,both_top1
+5815a843c1f1055e244c,english,2022-baytex-esg-report-final,Workforce Health & Safety,EM-EP-320a.1,54,True,True,31,31|49|52|54|56,0.0,1.0,1.0,0.0,0.25,49,49|54|31|50|29,0.0,1.0,1.0,0.0,0.5,False,neither_top1
+5daa96f92790a44b8c42,english,2022-baytex-esg-report-final,Critical Incident Risk Management,EM-EP-540a.1,55,True,True,55,55|54|52|70|53,1.0,1.0,1.0,1.0,1.0,55,55|54|52|70|53,1.0,1.0,1.0,1.0,1.0,False,both_top1
+641f74f544a781bda875,english,2022-baytex-esg-report-final,Air Quality,EM-EP-120a.1,53,True,True,53,53|47|63|87|81,1.0,1.0,1.0,1.0,1.0,53,53|47|25|63|87,1.0,1.0,1.0,1.0,1.0,False,both_top1
+66155ac5f3fa0e2aa6ac,english,2022-baytex-esg-report-final,Community Relations,EM-EP-210b.1,34,True,True,54,54|45|36|34|23,0.0,1.0,1.0,0.0,0.25,34,34|36|35|38|43,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+6e54c68a867d4c37126a,english,2022-baytex-esg-report-final,Workforce Health & Safety,EM-EP-320a.2,28|29,True,True,54,54|28|30|70|29,0.0,1.0,1.0,0.0,0.5,28,28|30|31|29|7,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+708e34a709a77348e6c3,english,2022-baytex-esg-report-final,Biodiversity Impacts,EM-EP-160a.1,15|16,True,True,53,53|15|16|14|23,0.0,1.0,1.0,0.0,0.5,15,15|14|16|53|18,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+70eb1e2bbe59db9854f4,english,2022-baytex-esg-report-final,Greenhouse Gas Emissions,EM-EP-110a.2,,False,,52,52|82|63|47|87,,,,,,47,47|52|82|53|63,,,,,,False,empty_gold
+7b98fc18387def75cd4d,english,2022-baytex-esg-report-final,Water Management,EM-EP-140a.2,53,True,True,53,53|24|48|47|17,1.0,1.0,1.0,1.0,1.0,53,53|24|17|52|22,1.0,1.0,1.0,1.0,1.0,False,both_top1
+7fcb333e98ac6d79913e,english,2022-baytex-esg-report-final,"Security, Human Rights & Rights of Indigenous Peoples",EM-EP-210a.2,54,True,True,54,54|35|27|55|14,1.0,1.0,1.0,1.0,1.0,54,54|35|55|2|7,1.0,1.0,1.0,1.0,1.0,False,both_top1
+8aa3c5977066e4aaa637,english,2022-baytex-esg-report-final,Water Management,EM-EP-140a.3,53,True,True,53,53|23|22|52|24,1.0,1.0,1.0,1.0,1.0,53,53|24|22|23|52,1.0,1.0,1.0,1.0,1.0,False,both_top1
+9408d181d578d46e69a3,english,2022-baytex-esg-report-final,Reserves Valuation & Capital Expenditures,EM-EP-420a.2,54,True,True,54,54|87|63|47|82,1.0,1.0,1.0,1.0,1.0,54,54|87|63|47|82,1.0,1.0,1.0,1.0,1.0,False,both_top1
+99af310f89a28bb5c0d5,english,2022-baytex-esg-report-final,Business Ethics & Transparency,EM-EP-510a.1,55,True,True,55,55|54|41|43|56,1.0,1.0,1.0,1.0,1.0,55,55|54|41|43|56,1.0,1.0,1.0,1.0,1.0,True,both_top1
+9da8adb15305794b9f2c,english,2022-baytex-esg-report-final,Water Management,EM-EP-140a.3,53,True,True,53,53|24|22|23|4,1.0,1.0,1.0,1.0,1.0,53,53|24|22|23|4,1.0,1.0,1.0,1.0,1.0,False,both_top1
+a53a71a6c6f0a60047e7,english,2022-baytex-esg-report-final,"Security, Human Rights & Rights of Indigenous Peoples",EM-EP-210a.3,35,True,True,54,54|55|35|43|41,0.0,1.0,1.0,0.0,0.3333333333333333,35,35|34|37|54|55,1.0,1.0,1.0,1.0,1.0,True,vlm_improved_top1
+af12b35cef1eda790f58,english,2022-baytex-esg-report-final,"Security, Human Rights & Rights of Indigenous Peoples",EM-EP-210a.1,54,True,True,54,54|35|55|27|43,1.0,1.0,1.0,1.0,1.0,54,54|35|55|27|43,1.0,1.0,1.0,1.0,1.0,False,both_top1
+d4c4c55f21ea2f820acb,english,2022-baytex-esg-report-final,Biodiversity Impacts,EM-EP-160a.2,53,True,True,48,48|52|53|47|17,0.0,1.0,1.0,0.0,0.3333333333333333,48,48|47|53|54|49,0.0,1.0,1.0,0.0,0.3333333333333333,False,neither_top1
+d6ebd452c30c3b668b81,english,2022-baytex-esg-report-final,Greenhouse Gas Emissions,EM-EP-110a.1,,False,,52,52|82|87|63|12,,,,,,46,46|52|82|9|47,,,,,,False,empty_gold
+de480f1bf76a59f99ad3,english,2022-baytex-esg-report-final,Management of the Legal & Regulatory Environment,EM-EP-530a.1,55,True,True,55,55|45|43|69|40,1.0,1.0,1.0,1.0,1.0,55,55|45|43|69|40,1.0,1.0,1.0,1.0,1.0,True,both_top1
+dfc0dbda54b19dd94397,english,2022-baytex-esg-report-final,Reserves Valuation & Capital Expenditures,EM-EP-420a.4,54,True,True,54,54|71|79|76|80,1.0,1.0,1.0,1.0,1.0,71,71|76|79|80|72,0.0,0.0,1.0,0.0,0.125,False,vlm_degraded_top1
+fa8ff7e6d5e57e0c75a8,english,2022-baytex-esg-report-final,Reserves Valuation & Capital Expenditures,EM-EP-420a.1,54,True,True,54,54|79|52|80|71,1.0,1.0,1.0,1.0,1.0,54,54|80|79|52|71,1.0,1.0,1.0,1.0,1.0,False,both_top1
+fb4422a8e5b6419c6340,english,2022-baytex-esg-report-final,Greenhouse Gas Emissions,EM-EP-110a.3,10|11|13,True,True,52,52|71|9|4|82,0.0,0.0,1.0,0.0,0.16666666666666666,71,71|9|4|10|68,0.0,1.0,1.0,0.0,0.25,False,neither_top1
+ff42abdb123a06424cfa,english,2022-baytex-esg-report-final,Environmental Impacts in the Supply Chain,EM-EP-160a.1,16,True,True,53,53|15|16|45|14,0.0,1.0,1.0,0.0,0.3333333333333333,53,53|14|15|16|22,0.0,1.0,1.0,0.0,0.25,False,neither_top1
+6750e6ca46fe402c57ac,english,burberry_2020-21_esg,Raw Materials Sourcing,CG-AA-440a.4,34,True,True,29,29|32|6|34|30,0.0,1.0,1.0,0.0,0.25,29,29|30|31|6|34,0.0,1.0,1.0,0.0,0.2,False,neither_top1
+73b7e8ef0412a66b0b9e,english,burberry_2020-21_esg,Labour Conditions in the Supply Chain,CG-AA-430b.3,19|20,True,True,30,30|3|4|20|19,0.0,1.0,1.0,0.0,0.25,31,31|21|30|3|4,0.0,0.0,1.0,0.0,0.16666666666666666,False,neither_top1
+83fa962cf32692e7e129,english,burberry_2020-21_esg,Environmental Impacts in the Supply Chain,CG-AA-430a.1,,False,,31,31|29|2|6|30,,,,,,31,31|29|2|6|30,,,,,,True,empty_gold
+b73904049186c8e627fe,english,burberry_2020-21_esg,Labour Conditions in the Supply Chain,CG-AA-430b.2,,False,,31,31|29|32|21|6,,,,,,31,31|29|32|21|6,,,,,,True,empty_gold
+3888efcac10564ace059,english,cannickel-esg-report2023-print,Energy Management,EM-MM-130a.1,45|53,True,True,54,54|46|59|43|60,0.0,0.0,1.0,1.0,0.1,54,54|46|59|43|60,0.0,0.0,1.0,1.0,0.1,False,neither_top1
+4b3a8f5d6fe185536f29,english,cannickel-esg-report2023-print,Water Management,EM-MM-140a.2,55,True,True,48,48|63|54|51|55,0.0,1.0,1.0,0.0,0.2,42,42|53|47|48|54,0.0,0.0,1.0,0.0,0.125,False,neither_top1
+56009d1b85f1f8efd1f7,english,cannickel-esg-report2023-print,Waste & Hazardous Materials Management,EM-MM-150a.10,31,True,True,62,62|31|10|17|18,0.0,1.0,1.0,0.0,0.5,31,31|42|33|32|18,1.0,1.0,1.0,1.0,1.0,True,vlm_improved_top1
+62eabafb49790e225fd3,english,cannickel-esg-report2023-print,Waste & Hazardous Materials Management,EM-MM-150a.9,53,True,True,62,62|42|63|51|30,0.0,0.0,1.0,0.0,0.1111111111111111,53,53|42|54|62|17,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+8f113da9daadefbd2aab,english,cannickel-esg-report2023-print,"Security, Human Rights & Rights of Indigenous Peoples",EM-MM-210a.3,10,True,True,27,27|13|22|21|42,0.0,0.0,1.0,0.0,0.14285714285714285,27,27|22|21|25|10,0.0,1.0,1.0,0.0,0.2,False,neither_top1
+914433a05a6b8e0010e7,english,cannickel-esg-report2023-print,Water Management,EM-MM-140a.1,53,True,False,48,48|54|47|59|42,0.0,0.0,0.0,0.0,0.06666666666666667,54,54|48|59|46|50,0.0,0.0,0.0,1.0,0.09090909090909091,False,candidate_recall_miss
+a22c5e2bd44c4b7ffad8,english,cannickel-esg-report2023-print,Air Quality,EM-MM-120a.1,33,True,True,60,60|33|46|13|54,0.0,1.0,1.0,0.0,0.5,60,60|33|46|13|54,0.0,1.0,1.0,0.0,0.5,True,neither_top1
+b26853fe74fc9c84d9ba,english,cannickel-esg-report2023-print,Workforce Health & Safety,EM-MM-320a.1,31|35|55,True,True,55,55|29|31|51|46,1.0,1.0,1.0,1.0,1.0,55,55|35|31|30|28,1.0,1.0,1.0,1.0,1.0,False,both_top1
+b6802eff5d5f89b522c8,english,cannickel-esg-report2023-print,Biodiversity Impacts,EM-MM-160a.1,,False,,49,49|42|41|24|21,,,,,,49,49|50|42|24|34,,,,,,False,empty_gold
+c03f6c43791dd364d316,english,cannickel-esg-report2023-print,Greenhouse Gas Emissions,EM-MM-110a.1,53,True,True,53,53|46|60|54|43,1.0,1.0,1.0,1.0,1.0,53,53|46|59|60|54,1.0,1.0,1.0,1.0,1.0,False,both_top1
+314b191a643220b3977d,english,esg-2022,Greenhouse Gas Emissions,EM-MD-110a.1,18,True,True,19,19|47|18|17|26,0.0,1.0,1.0,1.0,0.3333333333333333,19,19|47|18|17|26,0.0,1.0,1.0,1.0,0.3333333333333333,False,neither_top1
+8bfba94a2e1501f2bf21,english,esg-2022,"Operational Safety, Emergency Preparedness & Response",EM-MD-540a.1,14,True,True,14,14|47|51|17|28,1.0,1.0,1.0,1.0,1.0,14,14|47|13|51|17,1.0,1.0,1.0,1.0,1.0,False,both_top1
+bb472e9e6ddcc0ee9477,english,esg-2022,"Operational Safety, Emergency Preparedness & Response",EM-MD-540a.4,,False,,13,13|12|2|28|14,,,,,,13,13|12|14|45|23,,,,,,False,empty_gold
+f3d61f6fd61a57dd774f,english,esg-2022,Greenhouse Gas Emissions,EM-MD-110a.2,7|21,True,True,16,16|30|19|47|21,0.0,1.0,1.0,0.0,0.2,45,45|46|20|26|18,0.0,0.0,0.0,0.0,0.0625,False,neither_top1
+00b0ae20462770abe10d,english,esg-report-2022,Financial Inclusion & Capacity Building,FN-CB-240a.1,31|43,True,False,10,10|25|21|37|34,0.0,0.0,0.0,0.0,0.08333333333333333,25,25|21|26|44|20,0.0,0.0,0.0,0.0,0.0,True,candidate_recall_miss
+10ea4f1fefb67afcb332,english,esg-report-2022,Data Security,FN-CB-230a.2,22,True,True,51,51|9|47|49|14,0.0,0.0,1.0,0.0,0.125,51,51|50|22|13|49,0.0,1.0,1.0,0.0,0.3333333333333333,False,neither_top1
+5511a5d396eaca8711bc,english,esg-report-2022,"Incorporation of Environmental, Social, and Governance Factors in Credit Analysis",FN-CB-410a.2,8|9|12|14,True,True,7,7|9|14|17|15,0.0,1.0,1.0,1.0,0.5,14,14|7|8|9|17,1.0,1.0,1.0,1.0,1.0,False,vlm_improved_top1
+9a1c4cf0f88981b19837,english,esg-report-2022,Systemic Risk Management,FN-CB-550a.2,14,True,True,14,14|9|7|33|47,1.0,1.0,1.0,1.0,1.0,14,14|10|12|13|33,1.0,1.0,1.0,1.0,1.0,False,both_top1
