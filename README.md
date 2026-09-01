@@ -1,4 +1,4 @@
-# SASBPageRAG at NTCIR-19 RegCom
+# RegComEvidenceMatch at NTCIR-19 RegCom
 
 This repository contains the paper, source snapshots, evaluation utilities, and
 selected analysis artifacts for the IMNTPU participation in the NTCIR-19
