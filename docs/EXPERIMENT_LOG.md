@@ -542,6 +542,8 @@ Copy this template for every reported run.
   Methods describes statistical validation and the qualitative/user-oriented
   evaluation boundary; Conclusions separates findings, academic contribution,
   managerial/practical implications, and future user evaluation.
-- Captions were expanded for all main tables and figures. Figure 2 and Figure
-  3 are regenerated as vertical grouped bar charts with legends outside the
-  plotting area. Acknowledgments was updated to the supplied grant text.
+- Captions were expanded for all main tables and figures. The two score-comparison
+  figures are regenerated as vertical grouped bar charts with legends below the
+  plotting area. The original unified architecture image is replaced by separate
+  generated Task 1 and Task 2 flowcharts so full-report retrieval and single-page
+  verification are not visually conflated. Acknowledgments was updated to the supplied grant text.

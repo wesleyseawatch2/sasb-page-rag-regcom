@@ -31,14 +31,15 @@ def task2_model_comparison() -> None:
     ax.set_xticks(x, models, rotation=12, ha="right")
     ax.set_ylim(0, 0.75)
     ax.set_ylabel("F1 score")
-    ax.set_title("Task 2 Single-Page Metric Verification: Micro F1 and Macro F1 by Model", pad=10)
     ax.grid(axis="y", linestyle="--", linewidth=0.5, alpha=0.45)
     ax.set_axisbelow(True)
-    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 0.97), frameon=False, ncol=2)
     for bars in (bars_micro, bars_macro):
         ax.bar_label(bars, fmt="%.4f", padding=3, fontsize=8)
-    fig.subplots_adjust(top=0.78, bottom=0.25)
-    fig.tight_layout(rect=[0, 0, 1, 0.82])
+    # Keep the metric legend below the plotting area so it never competes with
+    # the bars or the complete figure caption in the paper.
+    fig.legend(loc="upper center", bbox_to_anchor=(0.5, -0.015), frameon=False, ncol=2)
+    fig.subplots_adjust(bottom=0.31)
+    fig.tight_layout(rect=[0, 0.12, 1, 1])
     fig.savefig(OUT / "task2_model_score_comparison.pdf", bbox_inches="tight")
     plt.close(fig)
 
@@ -77,15 +78,11 @@ def task1_retrieval_comparison() -> None:
     ax.set_xticks(x, short_configs)
     ax.set_ylim(0, 0.9)
     ax.set_ylabel("Score")
-    ax.set_title(
-        "Task 1 Reconstructed Full-Report Page Retrieval: Hit@1, Hit@5, Hit@10, and MRR by Configuration",
-        pad=10,
-    )
     ax.grid(axis="y", linestyle="--", linewidth=0.5, alpha=0.45)
     ax.set_axisbelow(True)
-    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 0.97), frameon=False, ncol=4)
-    fig.subplots_adjust(top=0.78, bottom=0.23)
-    fig.tight_layout(rect=[0, 0, 1, 0.82])
+    fig.legend(loc="upper center", bbox_to_anchor=(0.5, -0.02), frameon=False, ncol=4)
+    fig.subplots_adjust(bottom=0.36)
+    fig.tight_layout(rect=[0, 0.15, 1, 1])
     fig.savefig(OUT / "task1_retrieval_score_comparison.pdf", bbox_inches="tight")
     plt.close(fig)
 

@@ -31,7 +31,9 @@ items below are explicitly **blocked** and are listed as such rather than marked
   Holm correction, and 10,000-resample paired bootstrap intervals) in
   `artifacts/metrics/task2_paired_significance.json`.
 - [x] Main figure/table captions were expanded, and the two score-comparison figures were
-  regenerated as vertical grouped bar charts with legends outside the plotting area.
+  regenerated as vertical grouped bar charts with legends below the plotting area. The unified
+  architecture diagram was replaced by separate Task 1 and Task 2 flowcharts to keep the task
+  boundaries visually distinct.
 
 ## Data / experiment integrity
 
@@ -69,7 +71,7 @@ items below are explicitly **blocked** and are listed as such rather than marked
 ## LaTeX build
 
 - [x] Compiles cleanly end-to-end: `pdflatex -> bibtex -> pdflatex -> pdflatex`, exit code 0 at
-  every step, 12-page PDF produced (`paper/regcomagent_rag_ntcir_claude.pdf`).
+  every step, 13-page PDF produced (`paper/regcomagent_rag_ntcir_claude.pdf`).
 - [x] Citations: `bibtex` reports 0 warnings/errors; all 18 `\cite` keys resolve against
   `regcomagent_rag_refs.bib`; the post-bibtex log has zero "Citation ... undefined" or
   "Reference ... undefined" warnings.

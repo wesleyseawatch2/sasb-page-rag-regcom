@@ -115,7 +115,7 @@ pdflatex -interaction=nonstopmode regcomagent_rag_ntcir_claude.tex
 pdflatex -interaction=nonstopmode regcomagent_rag_ntcir_claude.tex
 ```
 
-Expected result: exit code 0 at every step, a 12-page PDF, zero undefined citations/references,
+Expected result: exit code 0 at every step, a 13-page PDF, zero undefined citations/references,
 zero `Overfull \hbox`/`Overfull \vbox` warnings. The only warnings that should appear are the ones
 already present in the unmodified `regcomagent_rag_ntcir.tex` (missing affiliation city, ACM
 reference-format/CCS-concepts notices, one CJK font-shape substitution, duplicate PDF anchor

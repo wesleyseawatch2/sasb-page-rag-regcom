@@ -66,7 +66,7 @@ Sustainability standards require evidence that is not only topically relevant bu
 IMNTPU
 
 \section*{Subtasks}
-RegCom Task 1 - Subtask 2: Single-Page Metric Verification. This report focuses on the non-Chinese subset: English, French, Japanese, Korean, and Thai. Section~\ref{sec:task1-diagnostic} additionally reports a preliminary, diagnostic-only extension toward Subtask 1 (multilingual evidence-page retrieval); it is not an official Task 1 result. The task description defines Subtask 1 more broadly as full-report compliance matching (page localization followed by category/unit verification); our reported Task 1 numbers cover only the page-localization stage.
+Subtask 1 (multilingual evidence page retrieval) and Subtask 2 (page-level three-way compliance verification), covering five official languages: English, French, Japanese, Korean, and Thai.
 
 \section{Introduction}
 \subsection{Background and Motivation}
@@ -118,7 +118,7 @@ A terminology note is necessary before comparing these systems further: ``Task 1
 Beyond the retrieval-versus-verifier framing already summarized above, the two submissions differ in ways that shape how their numbers should be read. Cierpa evaluates four retrieval signals individually before fusion: BM25 lexical matching (MRR 0.231), text embeddings (MRR 0.368), VLM-generated element descriptions (MRR 0.436), and page-image embeddings (MRR 0.511, the strongest single signal), with an untuned BM25+VTE+IE union (MRR 0.527) outperforming its own weight-tuned fusion (MRR 0.497) -- indicating that weight tuning on the training split did not generalize to the test split. Cierpa also audits the official RegCom release directly: across all six languages, 21.1\%/16.5\% (train/test) of relevant-page targets are non-unique for the same metric tuple, and 55.6\%/57.2\% of instances share a non-unique gold label at the PDF level, because a \texttt{no} label means the metric is absent from that specific page rather than from the whole report. Cierpa removes conflicting tuples and a page-numbering offset from its training split only (942 to 903 rows) and leaves test data unmodified. CSCU instead audits the official Subtask 1 split for document overlap and finds that all 62 official test documents are also present in the training split, so it explicitly reframes its own Subtask 1 results as seen-document, unseen-query evaluation rather than unseen-document generalization -- a caveat that plausibly extends to the other two submissions as well, since all three draw on the same official release, though this has not been independently verified for the non-Chinese split used here. CSCU further reports that its VLM-Guided retrieval variant raises paired Subtask 1 macro F1 from 14.8 to 31.0 across 438 metric instances (95\% bootstrap CI [11.0, 21.5] on the paired gain; Wilcoxon signed-rank $p<10^{-6}$), while Near@1 -- crediting a prediction one page from gold -- rises from 10.4 to 46.6, roughly one and a half times the exact-match gain. Cierpa does not report a paired significance test for its headline comparison; in contrast, our new paired Task 2 tests are reported in Table~\ref{tab:task2-significance}, while the retrieval-extension tests are reported in Section~\ref{sec:task1-diagnostic}.
 
 \begin{table*}[t]
-\caption{RegCom System Design Comparison: Task Focus, Page Evidence, Full-Report Page Retrieval, Retrieved Demonstrations, and Main Trade-Offs Across Three Submissions. ``RAG examples'' refers to retrieval of labeled demonstrations for the verifier, whereas ``page retrieval'' refers to localization within a full report.}
+\caption{RegCom System Design Comparison: Task Focus, Page Evidence, Full-Report Page Retrieval, Retrieved Demonstrations, and Main Trade-Offs Across Three Submissions.}
 \label{tab:system-comparison}
 \centering
 \small
@@ -127,7 +127,7 @@ Beyond the retrieval-versus-verifier framing already summarized above, the two s
 \toprule
 System & Task focus & Page evidence & Page retrieval & RAG examples & Main trade-off \\
 \midrule
-\SASBPageRAG{} & Subtask 2 & Extracted text & Task-provided page & TF-IDF, metric-first, label-balanced & Lightweight; loses layout \\
+\SASBPageRAG{} & Subtasks 1--2 & Extracted text and page image & Lexical, dense, multi-vector, VLM reranking & TF-IDF, metric-first, label-balanced & Modular; end-to-end verifier coupling remains open \\
 Cierpa & Subtasks 1--2 & Text and page image & Lexical, semantic, visual, VLM reranking & Random or metric-prioritized & Broad signals; higher cost \\
 CSCU & Subtasks 1--2 & Text and/or page image & ToC-first, fallback, VLM guidance & Prompt-based verification & Traceable and multimodal; coupled changes \\
 \bottomrule
@@ -141,14 +141,22 @@ Subtask 2 is Single-Page Metric Verification. Given a single SASB metric and a s
 The experiments use the non-Chinese subset of the task package, covering English, French, Japanese, Korean, and Thai. The retrieval and classifier training pool contains 753 labeled rows, and the evaluation set contains 793 rows. The training pool contains 295 \texttt{yes}, 127 \texttt{yes but not complete}, and 331 \texttt{no} rows, while the test set contains 315 \texttt{yes}, 138 \texttt{yes but not complete}, and 340 \texttt{no} rows.
 
 \subsection{Proposed Research Architecture}
-Figure~\ref{fig:architecture} shows the proposed research architecture of \SASBPageRAG{}. The workflow starts from training and development CSV files, SASB knowledge bases, and source PDFs. After preprocessing and evidence extraction, the system retrieves similar labeled cases, constructs a prompt with few-shot examples and JSON output constraints, applies LLM-based classification, and produces evaluation scores and prediction files.
+Figures~\ref{fig:task1-architecture} and~\ref{fig:task2-architecture} show the two task-specific research architectures. Subtask 1 starts from full ESG reports and localizes evidence pages through multi-model retrieval and VLM reranking. Subtask 2 receives one metric and one page, retrieves labeled demonstrations, and performs three-way compliance verification with text and optional page-image evidence.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{sasb_page_rag_architecture_generated.png}
-\caption{Generated Unified Research Architecture for Task 1 Full-Report Page Matching and Task 2 Single-Page Metric Verification. The diagram shows the shared multilingual knowledge and evidence path, Task 1's BGE-M3 retrieval and VLM reranking branch, Task 2's page-image verification models, and the corresponding evaluation outputs.}
-\Description{A generated left-to-right architecture diagram. Multilingual SASB knowledge bases and ESG report inputs are cleaned and converted into page text and page images. A shared retrieval and context stage feeds two branches: Task 1 uses BGE-M3 dense, sparse, and ColBERT representations followed by GPT-5.4-nano VLM reranking for full-report page matching; Task 2 uses Gemini 2.5 Pro, GLM-5.2, and GPT-5.4-mini with text and page images for single-page metric verification. Each branch produces its corresponding retrieval or classification metrics and structured output files.}
-\label{fig:architecture}
+\includegraphics[width=\textwidth]{sasb_task1_architecture_generated.png}
+\caption{Subtask 1 Multilingual Full-Report Evidence-Page Retrieval Architecture.}
+\Description{A generated left-to-right flowchart for Subtask 1. Full ESG report PDFs, five-language SASB knowledge bases, and reconstructed metric queries are preprocessed into page text and page images. BM25, BGE-M3 dense retrieval, and ColBERT multi-vector retrieval generate candidates; candidate fusion and GPT-5.4-nano VLM reranking produce ranked evidence pages and retrieval metrics.}
+\label{fig:task1-architecture}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{sasb_task2_architecture_generated.png}
+\caption{Subtask 2 Multilingual Single-Page Metric Compliance Verification Architecture.}
+\Description{A generated left-to-right flowchart for Subtask 2. One SASB metric, one ESG report page, category and unit requirements, and multilingual labeled examples are converted into extracted text and a rendered page image. TF-IDF and metric-first, label-balanced retrieval supplies context to Gemini 2.5 Pro, GLM-5.2, GPT-5.4-mini VLM, and a MiniLM logistic-regression baseline. The output is a three-way compliance label, category and unit matches, evidence, structured JSON, and class and language metrics.}
+\label{fig:task2-architecture}
 \end{figure*}
 
 \subsection{Retrieval-Augmented Few-Shot Verifier}
