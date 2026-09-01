@@ -122,8 +122,8 @@ Figure~\ref{fig:architecture} shows the proposed research architecture of \SASBP
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{sasb_page_rag_architecture.png}
-\caption{Proposed research architecture of \SASBPageRAG{} for single-page SASB metric verification.}
+\includegraphics[width=\textwidth]{sasb_page_rag_architecture.pdf}
+\caption{Unified research architecture for Task 1 full-report page matching and Task 2 single-page metric verification. Task 1 uses BGE-M3 multi-representation candidate generation with VLM reranking; Task 2 compares text LLMs, GPT-5.4-mini page-image verification, and a MiniLM baseline.}
 \label{fig:architecture}
 \end{figure*}
 
@@ -320,7 +320,7 @@ The best first-stage configuration is the three-representation BGE-M3 fusion, im
 
 \section{Discussion}
 \subsection{Strengths and Weaknesses across Approaches}
-Table~\ref{tab:pros-cons} summarizes the strengths and weaknesses each submission reports for itself. The three approaches occupy different points in the accuracy--complexity space. \SASBPageRAG{} is the simplest: it uses extracted text, a transparent TF-IDF case index, three demonstrations, and one verifier call. This makes the pipeline easy to inspect and comparatively inexpensive, and its reported Macro F1 remains close to the two multimodal submissions. Its central weakness is that lexical retrieval and flattened PDF text cannot preserve table geometry, visual grouping, or chart semantics.
+Table~\ref{tab:pros-cons} summarizes the strengths and weaknesses each submission reports for itself. The three approaches occupy different points in the accuracy--complexity space. \SASBPageRAG{} now has a modular text-first path plus optional BGE-M3 retrieval and GPT-5.4-mini page-image verification. This keeps the core pipeline easy to inspect and comparatively inexpensive, while allowing visual evidence for pages whose layout is poorly represented by extracted text. Its central weakness is that the optional multimodal path still uses a single low-detail image and does not fully preserve cross-page context.
 
 \begin{table}[t]
 \caption{Self-reported strengths and weaknesses of the three RegCom submissions compared in this report.}
@@ -332,7 +332,7 @@ Table~\ref{tab:pros-cons} summarizes the strengths and weaknesses each submissio
 \toprule
 System & Strengths & Weaknesses \\
 \midrule
-\SASBPageRAG{} & Transparent TF-IDF retrieval; single verifier call; cheap and reproducible; competitive Macro F1 despite text-only evidence & Text-only page evidence loses table/layout structure; no zero-shot or random-example control; non-Chinese scope only \\
+\SASBPageRAG{} & Transparent TF-IDF and BGE-M3 retrieval; label-balanced examples; optional GPT-5.4-mini page-image verifier; reproducible and modular & Single-page image is low-detail and loses cross-page context; multimodal run is below Gemini on Macro F1; no zero-shot or random-example control; non-Chinese scope only \\
 \addlinespace
 Cierpa & Multi-signal retrieval (lexical, semantic, visual) with RRF; explicit dataset non-uniqueness audit; systematic few-shot ablation (ZI/FI/xFI $\times$ random/metric-prioritized) & Trained fusion weights (OptRRF) underperform untuned fusion on test; VLM reranking cost is high (US\$11--\$62 per 615 instances); few-shot gains are language-dependent and can reverse (Japanese) \\
 \addlinespace
