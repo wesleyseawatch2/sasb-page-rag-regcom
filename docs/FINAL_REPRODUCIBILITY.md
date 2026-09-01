@@ -36,7 +36,7 @@ if present, its own analysis entry points are `src/task1/analyze_vlm.py`,
 `src/task1/end_to_end_vlm.py`, and `src/task1/aggregate_e2e.py` (all pre-existing, all API-free
 once the cache files exist).
 
-## 4. Task 1 diagnostics (in progress): `runs/task1-neighbor2`
+## 4. Task 1 diagnostics (complete): `runs/task1-neighbor2`
 
 This is the run this pass added tooling for. Two new, dependency-free scripts:
 
@@ -53,7 +53,7 @@ py src/task1/build_error_review_sample.py
 #   writes docs/TASK1_ERROR_REVIEW_SAMPLE.csv (65 rows by default; --target-size to change)
 ```
 
-Both scripts are **safe to rerun at any time**, including while another process is still appending
+Both scripts are **safe to rerun at any time**, including while another process is appending
 to `runs/task1-neighbor2/vlm-full20-cache.jsonl`:
 
 - They only ever *read* from `runs/task1-neighbor2/` (`retrieval.jsonl` and
@@ -65,12 +65,12 @@ to `runs/task1-neighbor2/vlm-full20-cache.jsonl`:
   produced is final (`complete_rows + error_rows >= expected_total` and no pending rows) — check
   this before citing a number as final anywhere.
 
-To regenerate the numbers quoted in the paper's §4.7 second paragraph (the 183/490 snapshot) after
-the run has progressed further or finished, just rerun `py src/task1/aggregate_neighbor2.py` and
-substitute the new `overall` / `per_language` figures; the paragraph's structure and hedging
-language do not need to change until `run_status.is_complete` is `true`, at which point the
-"still in progress" framing should be replaced with a normal complete-run report (matching how the
-`task1-dense-optimized` paragraph is written) and logged as a new dated `EXPERIMENT_LOG.md` entry.
+The final run is complete (490/490 queries, 0 errors, all six languages). To regenerate the exact
+numbers quoted in the paper, rerun `py src/task1/aggregate_neighbor2.py` and then
+`py src/task1/build_error_review_sample.py`; the resulting JSON/CSV files should match the checked-in
+artifacts. The paper keeps this configuration as a diagnostic ablation and retains the 10-candidate
+dense+VLM run as the primary diagnostic because the larger pool improves coverage but slightly lowers
+pooled Top-1/MRR.
 
 **Ranking reconstruction note:** `aggregate_neighbor2.py` reimplements (does not import or execute)
 the exact `normalize_vlm_ranking` / `hit_at` / `reciprocal_rank` / near@1 logic found in

@@ -18,8 +18,8 @@ items below are explicitly **blocked** and are listed as such rather than marked
   §4.7 is labeled diagnostic, dated, and sourced. One `[PLACEHOLDER]` remains for the number that
   does not exist yet (organizer-scored official Task 1 result) — this is intentional, not an
   oversight.
-- [x] Unfinished `task1-neighbor2` VLM results reported as an explicit, hedged, in-progress
-  snapshot (183/490, 2 of 6 languages) rather than extrapolated or silently completed.
+- [x] Completed `task1-neighbor2` VLM results reported as a final, explicitly diagnostic run
+  (490/490 queries, all six languages, 0 errors), with the 183/490 intermediate snapshot removed.
 - [x] Every number added or checked in this pass traces to one of: (a) a source PDF page (Cierpa /
   CSCU), (b) `artifacts/metrics/*.json` already on disk, (c) a dated `docs/EXPERIMENT_LOG.md`
   entry, or (d) live output of `src/task1/aggregate_neighbor2.py` (API-free, rerun during this
@@ -36,10 +36,8 @@ items below are explicitly **blocked** and are listed as such rather than marked
 - [x] `runs/task1-neighbor2/vlm-full20*` was not read directly at any point; all neighbor2 numbers
   came from `src/task1/aggregate_neighbor2.py`, which itself only reads `retrieval.jsonl` and the
   VLM cache and writes outside `runs/`.
-- [ ] **Blocked:** `task1-neighbor2` run completion. 183/490 as of the snapshot cited in the paper;
-  another process was still writing it when this pass finished. Rerun
-  `py src/task1/aggregate_neighbor2.py` after it stops growing (see
-  `docs/FINAL_REPRODUCIBILITY.md`).
+- [x] `task1-neighbor2` run completion: 490/490 queries and 0 errors. The final aggregator and
+  six-language error-review sample were regenerated and checked into the companion artifacts.
 - [ ] **Blocked:** official Subtask 1 evaluator and gold-page-set contract confirmation from the
   task organizers (`docs/TASK1_VLM_PLAN.md` §1's stated claim boundary). This is the only item
   that blocks calling any Task 1 number "official."
@@ -57,9 +55,12 @@ items below are explicitly **blocked** and are listed as such rather than marked
 - [x] Citations: `bibtex` reports 0 warnings/errors; all 18 `\cite` keys resolve against
   `regcomagent_rag_refs.bib`; the post-bibtex log has zero "Citation ... undefined" or
   "Reference ... undefined" warnings.
-- [x] Table overflow: zero `Overfull \hbox` and zero `Overfull \vbox` warnings anywhere in the
-  final-pass log, including around the two new/modified tables (`tab:pros-cons`,
-  `tab:system-comparison`).
+- [x] Table overflow: zero `Overfull \hbox`/`Overfull \vbox` warnings anywhere near any table,
+  including the two new/modified ones (`tab:pros-cons`, `tab:system-comparison`). One negligible
+  (1.8pt, imperceptible in print) `Overfull \hbox` appeared in body prose (the Section 3.2 prompt
+  template quote block, lines 149-155) in the very last recompile of this pass, downstream of the
+  same pre-existing CJK-italic font-shape substitution noted below -- not a table, not introduced
+  by content in this section, and not fixed further given the effort/value tradeoff at 1.8pt.
 - [x] Diagnostic-vs-official separation double-checked post-edit: §4.7 and the Limitations
   paragraph both restate that no retrieval number is official; a full-text search for `Hit@`/`MRR`
   outside §4.7 (and its cross-references) returns nothing.
@@ -73,12 +74,12 @@ items below are explicitly **blocked** and are listed as such rather than marked
 
 | File | Purpose |
 |---|---|
-| `src/task1/aggregate_neighbor2.py` | API-free metrics aggregator for the in-progress `task1-neighbor2` run |
+| `src/task1/aggregate_neighbor2.py` | API-free metrics aggregator for the completed `task1-neighbor2` diagnostic run |
 | `src/task1/build_error_review_sample.py` | Stratified, human-review-only error-sample CSV generator |
 | `artifacts/metrics/task1_neighbor2_summary.json` | Aggregator output (overall + per-language + API accounting) |
 | `artifacts/metrics/task1_neighbor2_per_query.csv` | Per-query aggregator output |
 | `docs/TASK1_ERROR_REVIEW_SAMPLE.csv` | 65-row stratified sample, blank judgment columns |
-| `docs/EXPERIMENT_LOG.md` (updated) | New dated entry for the `task1-neighbor2` in-progress snapshot |
+| `docs/EXPERIMENT_LOG.md` (updated) | Dated entries for the completed `task1-neighbor2` run and ablation decision |
 | `docs/CLAUDE_PAPER_REVIEW.md` (updated) | §6/§7 updated: fused-baseline discrepancy marked resolved; neighbor2 follow-up documented |
 | `docs/CLAUDE_ERROR_ANALYSIS.md` (updated) | New §3.5 with neighbor2 snapshot; §4 recommendations updated |
 | `paper/regcomagent_rag_ntcir_claude.tex` (updated) | §4.7 extended with the neighbor2 paragraph; `gpt-5.4-nano` backtick fixed to `\texttt{}` |
@@ -88,9 +89,14 @@ items below are explicitly **blocked** and are listed as such rather than marked
 
 ## Not done, and why
 
-- The paper was **not** rewritten to treat `task1-neighbor2` as the primary diagnostic, because it
-  is incomplete. The complete `task1-dense-optimized` run (490/490) remains the primary citable
-  diagnostic per `docs/CLAUDE_PAPER_REVIEW.md` §6's recommendation.
+- The paper was **not** rewritten to treat the now-complete `task1-neighbor2` run as the primary
+  diagnostic, even though it also finished during this pass. The reason is no longer "incomplete" --
+  it is that the 20-candidate configuration is not a strict improvement over the 10-candidate
+  `task1-dense-optimized` run (better candidate recall and Chinese/Japanese/Korean/Thai Hit@1, but
+  a French Top-1 regression and slightly lower pooled Hit@5/Near@1/MRR). §4.7 reports both
+  configurations' final numbers side by side with this trade-off stated explicitly, rather than
+  picking a "winner"; freezing one as *the* primary diagnostic is left as an explicit open decision
+  for the authors (`docs/CLAUDE_PAPER_REVIEW.md` §6/§7).
 - No API calls were made anywhere in this pass (aggregation and sampling are pure local
   computation over already-cached files).
 - `src/task1/task1_pipeline.py`, `runs/`, `cache/`, and `.env` were read where necessary for
