@@ -23,6 +23,15 @@ items below are explicitly **blocked** and are listed as such rather than marked
   CSCU), (b) `artifacts/metrics/*.json` already on disk, (c) a dated `docs/EXPERIMENT_LOG.md`
   entry, or (d) live output of `src/task1/aggregate_neighbor2.py` (API-free, rerun during this
   pass). No number in the diagnostic section was estimated or interpolated.
+- [x] APWG-oriented revision completed: the abstract now states background, gap, objective, method,
+  findings, academic contribution, and managerial/practical implications; the introduction states
+  research questions; conclusions separate findings, academic contribution, implications, and
+  future work.
+- [x] Paired Task 2 significance analysis added for all six model pairs (exact McNemar tests,
+  Holm correction, and 10,000-resample paired bootstrap intervals) in
+  `artifacts/metrics/task2_paired_significance.json`.
+- [x] Main figure/table captions were expanded, and the two score-comparison figures were
+  regenerated as vertical grouped bar charts with legends outside the plotting area.
 
 ## Data / experiment integrity
 
@@ -50,6 +59,9 @@ items below are explicitly **blocked** and are listed as such rather than marked
 - [ ] **Blocked:** human annotation of `docs/TASK1_ERROR_REVIEW_SAMPLE.csv`. The CSV exists (65
   rows, stratified) but every judgment column is intentionally blank; no inter-annotator agreement
   can be computed until a person annotates it.
+- [ ] **Open:** quantitative user evaluation has not been conducted. The paper specifies a future
+  controlled analyst study measuring decision accuracy, review time, calibration/abstention, and
+  perceived trust on identical text-only and multimodal cases; no user-study result is claimed.
 - [ ] **Open:** whether the non-Chinese Subtask 2 CSV split shares document identities across
   train/test the way CSCU found for the official Subtask 1 split — flagged as an open question in
   the paper (§5.2), not yet audited.
@@ -57,7 +69,7 @@ items below are explicitly **blocked** and are listed as such rather than marked
 ## LaTeX build
 
 - [x] Compiles cleanly end-to-end: `pdflatex -> bibtex -> pdflatex -> pdflatex`, exit code 0 at
-  every step, 9-page PDF produced (`paper/regcomagent_rag_ntcir_claude.pdf`).
+  every step, 12-page PDF produced (`paper/regcomagent_rag_ntcir_claude.pdf`).
 - [x] Citations: `bibtex` reports 0 warnings/errors; all 18 `\cite` keys resolve against
   `regcomagent_rag_refs.bib`; the post-bibtex log has zero "Citation ... undefined" or
   "Reference ... undefined" warnings.

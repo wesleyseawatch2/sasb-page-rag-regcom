@@ -518,3 +518,30 @@ Copy this template for every reported run.
   `artifacts/metrics/task1_multivec_per_query.csv`, and
   `src/task1/bge_m3_postprocess.py`. The paper uses the post-processed values
   and reports the evaluator/data-contract limitation in the Task 1 section.
+
+## Paired Task 2 significance analysis (2026-09-01)
+
+- Prediction-level comparison was run on the same 793 non-Chinese rows for
+  Gemini 2.5 Pro, GLM-5.2 RAG, GPT-5.4-mini VLM, and MiniLM+LR. Rows were
+  aligned by language, report, topic, metric description/code, page, file
+  stem, and an occurrence index for exact duplicates; no rows were dropped.
+- Two-sided exact McNemar tests and 10,000 paired bootstrap intervals were
+  computed for every pair. Holm correction across six comparisons leaves all
+  three LLM-versus-MiniLM contrasts significant (adjusted p < 0.001), while
+  Gemini-versus-GLM (p=0.209), Gemini-versus-GPT-5.4-mini (p=0.294), and
+  GLM-versus-GPT-5.4-mini (p=0.748) are not significant at alpha=0.05.
+- Reproducibility output: `artifacts/metrics/task2_paired_significance.json`;
+  rerun utility: `src/task2/paired_significance.py`.
+
+## APWG-oriented paper revision (2026-09-01)
+
+- Abstract was rewritten around background, gap, objective, method, findings,
+  academic contribution, and managerial/practical implications, with five
+  keywords and fewer model/process names.
+- Introduction now states research objectives and three research questions;
+  Methods describes statistical validation and the qualitative/user-oriented
+  evaluation boundary; Conclusions separates findings, academic contribution,
+  managerial/practical implications, and future user evaluation.
+- Captions were expanded for all main tables and figures. Figure 2 and Figure
+  3 are regenerated as vertical grouped bar charts with legends outside the
+  plotting area. Acknowledgments was updated to the supplied grant text.

@@ -23,27 +23,22 @@ def task2_model_comparison() -> None:
     micro = np.array([0.6507, 0.6280, 0.6217, 0.4603])
     macro = np.array([0.6140, 0.5963, 0.5748, 0.4489])
 
-    y = np.arange(len(models))
-    height = 0.34
-    fig, ax = plt.subplots(figsize=(7.15, 3.0))
-    bars_micro = ax.barh(y + height / 2, micro, height, label="Micro F1", color="#4472C4")
-    bars_macro = ax.barh(y - height / 2, macro, height, label="Macro F1", color="#ED7D31")
-    ax.set_yticks(y, models)
-    ax.invert_yaxis()
-    ax.set_xlim(0, 0.72)
-    ax.set_xlabel("F1 score")
-    ax.set_title("Task 2 model comparison (793 non-Chinese test rows)", pad=8)
-    ax.grid(axis="x", linestyle="--", linewidth=0.5, alpha=0.45)
+    x = np.arange(len(models))
+    width = 0.34
+    fig, ax = plt.subplots(figsize=(7.15, 3.4))
+    bars_micro = ax.bar(x - width / 2, micro, width, label="Micro F1", color="#4472C4")
+    bars_macro = ax.bar(x + width / 2, macro, width, label="Macro F1", color="#ED7D31")
+    ax.set_xticks(x, models, rotation=12, ha="right")
+    ax.set_ylim(0, 0.75)
+    ax.set_ylabel("F1 score")
+    ax.set_title("Task 2 Single-Page Metric Verification: Micro F1 and Macro F1 by Model", pad=10)
+    ax.grid(axis="y", linestyle="--", linewidth=0.5, alpha=0.45)
     ax.set_axisbelow(True)
-    ax.legend(
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.13),
-        frameon=False,
-        ncol=2,
-    )
+    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 0.97), frameon=False, ncol=2)
     for bars in (bars_micro, bars_macro):
         ax.bar_label(bars, fmt="%.4f", padding=3, fontsize=8)
-    fig.tight_layout()
+    fig.subplots_adjust(top=0.78, bottom=0.25)
+    fig.tight_layout(rect=[0, 0, 1, 0.82])
     fig.savefig(OUT / "task2_model_score_comparison.pdf", bbox_inches="tight")
     plt.close(fig)
 
@@ -65,27 +60,32 @@ def task1_retrieval_comparison() -> None:
     }
     colors = ["#4472C4", "#70AD47", "#ED7D31", "#A5A5A5"]
 
-    y = np.arange(len(configs))
-    height = 0.18
-    fig, ax = plt.subplots(figsize=(7.15, 3.55))
-    offsets = np.array([-1.5, -0.5, 0.5, 1.5]) * height
+    x = np.arange(len(configs))
+    width = 0.18
+    fig, ax = plt.subplots(figsize=(7.15, 4.0))
+    offsets = np.array([-1.5, -0.5, 0.5, 1.5]) * width
     for (metric, values), offset, color in zip(scores.items(), offsets, colors):
-        bars = ax.barh(y + offset, values, height, label=metric, color=color)
+        bars = ax.bar(x + offset, values, width, label=metric, color=color)
         ax.bar_label(bars, fmt="%.3f", padding=2, fontsize=6.8)
-    ax.set_yticks(y, configs)
-    ax.invert_yaxis()
-    ax.set_xlim(0, 0.9)
-    ax.set_xlabel("Score")
-    ax.set_title("Task 1 retrieval comparison (369 non-empty-gold groups)", pad=8)
-    ax.grid(axis="x", linestyle="--", linewidth=0.5, alpha=0.45)
-    ax.set_axisbelow(True)
-    ax.legend(
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.13),
-        frameon=False,
-        ncol=4,
+    short_configs = [
+        "MiniLM\nfused",
+        "BGE-M3\ndense",
+        "BGE-M3\ndense+sparse",
+        "BGE-M3\ndense+sparse+\nColBERT",
+        "BGE-\nReranker-v2-M3",
+    ]
+    ax.set_xticks(x, short_configs)
+    ax.set_ylim(0, 0.9)
+    ax.set_ylabel("Score")
+    ax.set_title(
+        "Task 1 Reconstructed Full-Report Page Retrieval: Hit@1, Hit@5, Hit@10, and MRR by Configuration",
+        pad=10,
     )
-    fig.tight_layout()
+    ax.grid(axis="y", linestyle="--", linewidth=0.5, alpha=0.45)
+    ax.set_axisbelow(True)
+    fig.legend(loc="upper center", bbox_to_anchor=(0.5, 0.97), frameon=False, ncol=4)
+    fig.subplots_adjust(top=0.78, bottom=0.23)
+    fig.tight_layout(rect=[0, 0, 1, 0.82])
     fig.savefig(OUT / "task1_retrieval_score_comparison.pdf", bbox_inches="tight")
     plt.close(fig)
 

@@ -1,0 +1,194 @@
+{
+  "description": "Paired Task 2 model comparisons on identical row identities; exact McNemar and paired bootstrap.",
+  "key_fields": [
+    "lang",
+    "cid",
+    "topic",
+    "metric_description",
+    "metric_code",
+    "page",
+    "file_stem"
+  ],
+  "comparisons": [
+    {
+      "n": 793,
+      "model_a": "Gemini-2.5-Pro",
+      "model_b": "GLM-5.2-RAG",
+      "accuracy_a": 0.6506935687263556,
+      "accuracy_b": 0.6279949558638083,
+      "macro_f1_a": 0.6140039543577159,
+      "macro_f1_b": 0.5963204847156254,
+      "mcnemar": {
+        "a_only_correct": 64,
+        "b_only_correct": 46,
+        "p_two_sided_exact": 0.10461305811126677,
+        "p_holm": 0.293789131191011,
+        "significant_after_holm_alpha_0.05": false
+      },
+      "paired_bootstrap": {
+        "accuracy_delta": 0.022745649432534678,
+        "accuracy_ci95": [
+          -0.0025220680958386588,
+          0.0491803278688524
+        ],
+        "macro_f1_delta": 0.01770555209258057,
+        "macro_f1_ci95": [
+          -0.013706723177052963,
+          0.05022814827227036
+        ],
+        "resamples": 10000,
+        "seed": 20260901
+      }
+    },
+    {
+      "n": 793,
+      "model_a": "Gemini-2.5-Pro",
+      "model_b": "GPT-5.4-mini-VLM",
+      "accuracy_a": 0.6506935687263556,
+      "accuracy_b": 0.6216897856242118,
+      "macro_f1_a": 0.6140039543577159,
+      "macro_f1_b": 0.5747937152145681,
+      "mcnemar": {
+        "a_only_correct": 100,
+        "b_only_correct": 77,
+        "p_two_sided_exact": 0.09792971039700368,
+        "p_holm": 0.293789131191011,
+        "significant_after_holm_alpha_0.05": false
+      },
+      "paired_bootstrap": {
+        "accuracy_delta": 0.02930264817150063,
+        "accuracy_ci95": [
+          -0.0025220680958386588,
+          0.061822194199242994
+        ],
+        "macro_f1_delta": 0.03946933402154287,
+        "macro_f1_ci95": [
+          -3.140295535935078e-05,
+          0.07949996067079025
+        ],
+        "resamples": 10000,
+        "seed": 20260901
+      }
+    },
+    {
+      "n": 793,
+      "model_a": "Gemini-2.5-Pro",
+      "model_b": "MiniLM-LR",
+      "accuracy_a": 0.6506935687263556,
+      "accuracy_b": 0.46027742749054223,
+      "macro_f1_a": 0.6140039543577159,
+      "macro_f1_b": 0.44890665586829065,
+      "mcnemar": {
+        "a_only_correct": 248,
+        "b_only_correct": 97,
+        "p_two_sided_exact": 2.2034823465082836e-16,
+        "p_holm": 1.3220894079049703e-15,
+        "significant_after_holm_alpha_0.05": true
+      },
+      "paired_bootstrap": {
+        "accuracy_delta": 0.1907379571248424,
+        "accuracy_ci95": [
+          0.14880201765447665,
+          0.23581336696090788
+        ],
+        "macro_f1_delta": 0.16532308738178325,
+        "macro_f1_ci95": [
+          0.12040950354040189,
+          0.21110719698663694
+        ],
+        "resamples": 10000,
+        "seed": 20260901
+      }
+    },
+    {
+      "n": 793,
+      "model_a": "GLM-5.2-RAG",
+      "model_b": "GPT-5.4-mini-VLM",
+      "accuracy_a": 0.6279949558638083,
+      "accuracy_b": 0.6216897856242118,
+      "macro_f1_a": 0.5963204847156254,
+      "macro_f1_b": 0.5747937152145681,
+      "mcnemar": {
+        "a_only_correct": 80,
+        "b_only_correct": 75,
+        "p_two_sided_exact": 0.7481109519787563,
+        "p_holm": 0.7481109519787563,
+        "significant_after_holm_alpha_0.05": false
+      },
+      "paired_bootstrap": {
+        "accuracy_delta": 0.006556998738965953,
+        "accuracy_ci95": [
+          -0.023959646910466592,
+          0.03656998738965955
+        ],
+        "macro_f1_delta": 0.0217637819289623,
+        "macro_f1_ci95": [
+          -0.01188279609825106,
+          0.055303914723535075
+        ],
+        "resamples": 10000,
+        "seed": 20260901
+      }
+    },
+    {
+      "n": 793,
+      "model_a": "GLM-5.2-RAG",
+      "model_b": "MiniLM-LR",
+      "accuracy_a": 0.6279949558638083,
+      "accuracy_b": 0.46027742749054223,
+      "macro_f1_a": 0.5963204847156254,
+      "macro_f1_b": 0.44890665586829065,
+      "mcnemar": {
+        "a_only_correct": 237,
+        "b_only_correct": 104,
+        "p_two_sided_exact": 4.4591768899865054e-13,
+        "p_holm": 2.2295884449932526e-12,
+        "significant_after_holm_alpha_0.05": true
+      },
+      "paired_bootstrap": {
+        "accuracy_delta": 0.1679923076923077,
+        "accuracy_ci95": [
+          0.12610340479192939,
+          0.21185372005044134
+        ],
+        "macro_f1_delta": 0.14761753528920266,
+        "macro_f1_ci95": [
+          0.10579928802231588,
+          0.19155728843105457
+        ],
+        "resamples": 10000,
+        "seed": 20260901
+      }
+    },
+    {
+      "n": 793,
+      "model_a": "GPT-5.4-mini-VLM",
+      "model_b": "MiniLM-LR",
+      "accuracy_a": 0.6216897856242118,
+      "accuracy_b": 0.46027742749054223,
+      "macro_f1_a": 0.5747937152145681,
+      "macro_f1_b": 0.44890665586829065,
+      "mcnemar": {
+        "a_only_correct": 234,
+        "b_only_correct": 106,
+        "p_two_sided_exact": 3.1652076246186094e-12,
+        "p_holm": 1.2660830498474438e-11,
+        "significant_after_holm_alpha_0.05": true
+      },
+      "paired_bootstrap": {
+        "accuracy_delta": 0.1614353089533417,
+        "accuracy_ci95": [
+          0.11853720050441358,
+          0.20554854981084486
+        ],
+        "macro_f1_delta": 0.12585375336024038,
+        "macro_f1_ci95": [
+          0.0813813096422233,
+          0.17021026009973123
+        ],
+        "resamples": 10000,
+        "seed": 20260901
+      }
+    }
+  ]
+}
