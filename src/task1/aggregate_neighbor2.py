@@ -114,13 +114,33 @@ def load_retrieval(path: Path) -> dict[str, dict[str, Any]]:
     return by_id
 
 
+def normalize_cache_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Accept either the raw per-call cache-line shape (status/candidate_pages/prediction at the
+    top level) or the merged output shape task1_pipeline.command_rerank writes once a run
+    finishes ({**retrieval_row, "vlm_trace": <raw cache line>, "vlm_ranked": [...]}). Always
+    returns the raw-cache-line shape so downstream code only has to handle one format."""
+    if "status" in row or "vlm_trace" not in row:
+        return row
+    trace = row.get("vlm_trace") or {}
+    return {
+        "sample_id": row.get("sample_id"),
+        "status": trace.get("status"),
+        "candidate_pages": trace.get("candidate_pages", []),
+        "prediction": trace.get("prediction", {}),
+        "model": trace.get("model"),
+        "latency_seconds": trace.get("latency_seconds"),
+        "usage": trace.get("usage", {}),
+        "error": trace.get("error"),
+    }
+
+
 def load_vlm_cache(paths: list[Path]) -> dict[str, dict[str, Any]]:
     by_id: dict[str, dict[str, Any]] = {}
     for path in paths:
         for row in read_jsonl(path):
             sample_id = row.get("sample_id")
             if sample_id:
-                by_id[sample_id] = row  # later occurrence wins, matching the pipeline's own cache merge
+                by_id[sample_id] = normalize_cache_row(row)  # later occurrence wins, matching the pipeline's own cache merge
     return by_id
 
 
@@ -173,6 +193,7 @@ def build_summary(
         fused_h1 = hit_at(fused_pages, gold, 1) if gold else None
         vlm_h1 = hit_at(vlm_pages, gold, 1) if gold else None
         recall10 = bool(gold & set(fused_pages[:10])) if gold else None
+        recall_vlm_pool = bool(gold & set(candidate_pages)) if gold else None
         if not gold:
             category = "empty_gold"
         elif not recall10:
@@ -204,6 +225,8 @@ def build_summary(
             "gold_pages": "|".join(map(str, meta["gold_pages"])),
             "has_gold": bool(gold),
             "candidate_recall_at10": recall10,
+            "candidate_recall_vlm_pool": recall_vlm_pool,
+            "vlm_pool_size": len(candidate_pages),
             "fused_top1": fused_pages[0] if fused_pages else None,
             "fused_top5": "|".join(map(str, fused_pages[:5])),
             "fused_hit_at_1": fused_h1,
@@ -246,14 +269,19 @@ def build_summary(
             "mrr": statistics.fmean(r[f"{prefix}_reciprocal_rank"] for r in nonempty),
         }
 
-    def candidate_recall(rows: list[dict[str, Any]]) -> float:
+    def candidate_recall(rows: list[dict[str, Any]], field: str) -> float:
         nonempty = [r for r in rows if r["has_gold"]]
-        return statistics.fmean(bool(r["candidate_recall_at10"]) for r in nonempty) if nonempty else 0.0
+        return statistics.fmean(bool(r[field]) for r in nonempty) if nonempty else 0.0
 
     overall = {
         "fused_baseline": block_metrics(per_query, "fused"),
         "vlm_reranked": block_metrics(per_query, "vlm"),
-        "candidate_recall_at10": candidate_recall(per_query),
+        # Recall of the fused top-10 (the baseline slice) -- comparable across all runs in this repo.
+        "candidate_recall_at10": candidate_recall(per_query, "candidate_recall_at10"),
+        # Recall of the VLM's actual candidate pool (Top-20 with neighbor expansion in this run) --
+        # the true upper bound for vlm_reranked.hit_at_10 below, which can exceed candidate_recall_at10
+        # precisely because the VLM pool is larger than the fused top-10 slice.
+        "candidate_recall_vlm_pool": candidate_recall(per_query, "candidate_recall_vlm_pool"),
         "no_relevant_page_rate": statistics.fmean(bool(r["no_relevant_page"]) for r in per_query)
         if per_query
         else 0.0,
@@ -266,7 +294,8 @@ def build_summary(
         per_language[language] = {
             "fused_baseline": block_metrics(lang_rows, "fused"),
             "vlm_reranked": block_metrics(lang_rows, "vlm"),
-            "candidate_recall_at10": candidate_recall(lang_rows),
+            "candidate_recall_at10": candidate_recall(lang_rows, "candidate_recall_at10"),
+            "candidate_recall_vlm_pool": candidate_recall(lang_rows, "candidate_recall_vlm_pool"),
         }
 
     n_complete = len(per_query)
