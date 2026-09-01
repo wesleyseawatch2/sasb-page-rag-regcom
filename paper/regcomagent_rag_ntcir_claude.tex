@@ -166,6 +166,10 @@ The verifier prompt contains a compact system instruction, the retrieved demonst
 \subsection{Prompt Design}
 The Gemini and GLM prompts share one compact schema. Each prompt tells the model to judge only the supplied page, use three retrieved demonstrations and the metric label prior for calibration, and return JSON containing \texttt{pred\_label}, \texttt{category\_match}, \texttt{unit\_match}, evidence, and reason. The rules distinguish complete, partial/proxy or wrong-unit, and absent disclosures; an absent prediction sets the auxiliary fields to \texttt{N/A}. The target row includes language, report and page identifiers, metric metadata, SASB category and unit, key terms, ``what counts'' guidance, and extracted page text.
 
+\begin{quote}\small\itshape
+Judge only the supplied PDF page. Given the SASB metric, category/unit requirements, page text, and three retrieved labeled examples, return compact JSON with \texttt{pred\_label}, \texttt{category\_match}, \texttt{unit\_match}, evidence, and reason. Use \texttt{yes} for complete evidence, \texttt{yes but not complete} for partial/proxy/wrong-unit evidence, and \texttt{no} when the metric is absent; set auxiliary fields to \texttt{N/A} for \texttt{no}.
+\end{quote}
+
 \iffalse
 \begin{quote}\small\itshape
 You are a SASB page-level verification assistant. Judge only the single PDF page provided. Return compact JSON only with the following fields:
