@@ -196,7 +196,11 @@ def usage_cost(usage: dict[str, Any]) -> float:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--train", type=Path, default=DATA_DIR / "training_combined.csv")
+    # ``all_subtask2_dataset.csv`` is the released Subtask 2 training split;
+    # after excluding Chinese it yields the same 753-row pool used by the
+    # existing paper baselines.  ``training_combined.csv`` also contains
+    # auxiliary rows and would change the comparison denominator.
+    parser.add_argument("--train", type=Path, default=DATA_DIR / "all_subtask2_dataset.csv")
     parser.add_argument("--test", type=Path, default=DATA_DIR / "test_answer_sheet.csv")
     parser.add_argument("--truth", type=Path, default=DATA_DIR / "test_truth.csv")
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
