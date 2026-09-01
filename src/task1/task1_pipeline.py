@@ -403,8 +403,10 @@ def build_candidate_pool(
     rankings: dict[str, list[dict[str, Any]]],
     fused: list[dict[str, Any]],
     per_lane_k: int,
+    neighbor_window: int = 0,
+    neighbor_anchor_k: int = 10,
 ) -> list[dict[str, Any]]:
-    """Union the strongest pages from each lane for downstream reranking."""
+    """Union lane candidates and optionally add pages adjacent to top fused hits."""
     if per_lane_k <= 0:
         return []
     fused_by_page = {int(item["page"]): item for item in fused}
@@ -426,6 +428,25 @@ def build_candidate_pool(
             if page not in seen:
                 ordered.append(page)
                 seen.add(page)
+    if neighbor_window > 0:
+        # Keep the original fused top-k first, then expand around each hit.
+        # This makes a downstream budget of 20--30 images sensitive to tables
+        # that continue onto the immediately preceding/following PDF pages.
+        valid_pages = {int(item["page"]) for rows in rankings.values() for item in rows}
+        fused_prefix = [int(item["page"]) for item in fused[: max(0, neighbor_anchor_k)]]
+        expanded: list[int] = []
+        for page in fused_prefix:
+            if page not in expanded:
+                expanded.append(page)
+        for page in fused_prefix:
+            for delta in range(1, neighbor_window + 1):
+                for neighbor in (page - delta, page + delta):
+                    if neighbor in valid_pages and neighbor not in expanded:
+                        expanded.append(neighbor)
+        for page in ordered:
+            if page not in expanded:
+                expanded.append(page)
+        ordered = expanded
     return [
         {
             "page": page,
@@ -610,7 +631,13 @@ def command_retrieve(args: argparse.Namespace) -> None:
             "dense": args.dense_weight,
         }
         fused = reciprocal_rank_fusion(rankings, weights, args.rrf_k)
-        candidate_pool = build_candidate_pool(rankings, fused, args.candidate_pool_k)
+        candidate_pool = build_candidate_pool(
+            rankings,
+            fused,
+            args.candidate_pool_k,
+            neighbor_window=args.neighbor_window,
+            neighbor_anchor_k=args.neighbor_anchor_k,
+        )
         outputs.append(
             {
                 **query,
@@ -621,6 +648,8 @@ def command_retrieve(args: argparse.Namespace) -> None:
                     "page_char_limit": args.page_char_limit,
                     "char_max_features": args.char_max_features,
                     "query_text_mode": args.query_text_mode,
+                    "neighbor_window": args.neighbor_window,
+                    "neighbor_anchor_k": args.neighbor_anchor_k,
                 },
                 "rankings": {lane: rows[: args.keep_rankings] for lane, rows in rankings.items()},
                 "fused": fused[: args.top_k],
@@ -1013,6 +1042,18 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=0,
         help="Union this many pages per lane for optional VLM reranking (0 disables).",
+    )
+    retrieve.add_argument(
+        "--neighbor-window",
+        type=int,
+        default=0,
+        help="Add +/- this many PDF neighbors after the fused prefix in candidate_pool.",
+    )
+    retrieve.add_argument(
+        "--neighbor-anchor-k",
+        type=int,
+        default=10,
+        help="Number of top fused pages around which to expand neighbors.",
     )
     retrieve.add_argument("--keep-rankings", type=int, default=20)
     retrieve.add_argument("--page-char-limit", type=int, default=6000)

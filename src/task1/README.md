@@ -148,3 +148,13 @@ The dense-fused retrieval reaches Hit@1/5/10 of 0.220/0.493/0.631 and MRR
 rate-limit handling; completed requests are always reused from the JSONL
 cache. These figures are reconstructed diagnostics and should not be reported
 as official Task 1 scores until the query-level evaluator is released.
+
+### Neighbor-page ablation
+
+To test disclosures that continue across page boundaries, add
+`--neighbor-window 2 --neighbor-anchor-k 10` to the `retrieve` command and use
+`--ranking-field candidate_pool --candidates 20` for reranking. On the same 490
+groups this raised candidate recall@20 to 0.710, but the full nano run reached
+Hit@1/5/10 of 0.314/0.561/0.648 and MRR 0.423, versus 0.328/0.583/0.631 and
+MRR 0.431 for the 10-candidate primary run. The larger pool is therefore kept
+as an ablation, not the default configuration.

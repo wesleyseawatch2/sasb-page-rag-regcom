@@ -9,6 +9,10 @@ venv/
 .vscode/
 *.log
 *.tmp
+*.aux
+*.bbl
+*.blg
+*.out
 *.zip
 *.7z
 *.pdf
