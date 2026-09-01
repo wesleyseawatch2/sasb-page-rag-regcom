@@ -44,6 +44,9 @@ items below are explicitly **blocked** and are listed as such rather than marked
   dense, dense+sparse, dense+sparse+ColBERT, and reranker variants on the same 490 reconstructed
   query groups (369 non-empty gold); all values remain retrieval measurements rather than official
   Subtask 1 scores.
+- [x] Completed API-free BGE post-processing and paired analysis: all 13 arms re-aggregated,
+  490/490 queries checked, 369 non-empty and 121 empty groups confirmed, bootstrap 95\% CIs and
+  paired McNemar tests reported, and Thai/French/index-page failure modes quantified.
 - [ ] **Blocked:** human annotation of `docs/TASK1_ERROR_REVIEW_SAMPLE.csv`. The CSV exists (65
   rows, stratified) but every judgment column is intentionally blank; no inter-annotator agreement
   can be computed until a person annotates it.

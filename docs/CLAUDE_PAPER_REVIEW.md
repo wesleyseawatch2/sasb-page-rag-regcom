@@ -6,6 +6,15 @@ Scope: `paper/regcomagent_rag_ntcir.tex` (IMNTPU / SASBPageRAG submission) compa
 NTCIR-19 RegCOM Task), plus this repository's `docs/EXPERIMENT_LOG.md` and
 `docs/TASK1_VLM_PLAN.md`.
 
+**Post-review update (2026-09-01):** the revised paper now includes the completed BGE-M3
+multi-representation retrieval ablation and the GPT-5.4-mini multimodal Task 2 run. The two
+source PDFs named above are not currently present in this checkout, so their figures cannot be
+re-read from disk in this pass; the quantitative claims below remain the line-by-line checks made
+against those PDFs during the original review. No corrections were found in that verification:
+Cierpa's 0.637 best Subtask 2 Macro F1, retrieval MRR values 0.527/0.584/0.636 and US$11/62
+reranking costs, and CSCU's 0.624 Macro F1/0.679 accuracy and 31.0 versus 14.8 Subtask 1 values
+are unchanged.
+
 **Method note:** This review was produced by reading the three papers and the repository's own
 logged/cached diagnostics. No OpenAI API calls were made, `src/task1/task1_pipeline.py` was not
 modified, and `runs/task1-dense-optimized/vlm-full*` and `cache/` were not read or altered. Every

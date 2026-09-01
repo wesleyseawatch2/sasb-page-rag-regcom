@@ -480,3 +480,41 @@ Copy this template for every reported run.
   Korean 0.6321, Thai 0.4864. The completed trace reports an estimated API
   cost of US$1.3562; this value is retained for reproducibility rather than
   used as a performance criterion.
+
+## BGE-M3 post-processing and paired analysis (2026-09-01)
+
+- The cached BGE run was post-processed without new model inference. All 13
+  pre-registered configurations were re-aggregated over the same 490 query
+  groups (369 non-empty, 121 empty), with no duplicate queries and no missing
+  predictions. Per-query values agree with the run-of-record within at most one
+  row because of fp16 score-boundary rounding. Three out-of-range gold pages
+  belong to the SPT report, whose PDF extraction produced only one blank page;
+  the issue affects every arm equally.
+- Paired 10,000-resample bootstrap (n=369), baseline versus the best
+  dense+sparse+ColBERT/raw arm:
+
+  | metric | baseline | best | delta (95% CI) | CI excludes zero |
+  |---|---:|---:|---:|:---:|
+  | Hit@1 | 0.220 | 0.266 | +0.046 [+0.005,+0.087] | yes |
+  | Hit@5 | 0.493 | 0.545 | +0.051 [+0.005,+0.095] | yes |
+  | Hit@10 | 0.631 | 0.675 | +0.043 [-0.003,+0.089] | no |
+  | Hit@20 | 0.751 | 0.818 | +0.068 [+0.030,+0.106] | yes |
+  | Near@1 | 0.293 | 0.325 | +0.033 [-0.011,+0.079] | no |
+  | MRR | 0.350 | 0.398 | +0.048 [+0.017,+0.079] | yes |
+
+- Paired McNemar tests on Hit@1: baseline versus best (22 versus 39,
+  p=0.040); dense+sparse raw versus natural query (15 versus 7, p=0.13);
+  multi-vector raw versus natural query (22 versus 8, p=0.016); first-stage
+  versus ungated reranker (58 versus 25, p=0.0004); and reranker versus its
+  language-gated variant (14 versus 48, p<0.001).
+- Error analysis: the ungated reranker promotes SASB/GRI index pages to Top-1
+  for 91/369 raw queries (66 incorrect) and 142/369 natural queries (111
+  incorrect). Thai misses the gold page from Top-20 in 32/64 groups, while
+  French has 29/50 groups whose gold page is retrieved in Top-20 but not ranked
+  first. Empty-gold detection is 0/121 because the retriever has no abstention
+  head; fused-score AUC for empty versus non-empty is 0.48.
+- New reproducibility outputs from the post-processing machine:
+  `artifacts/metrics/task1_multivec_ablation.json`,
+  `artifacts/metrics/task1_multivec_per_query.csv`, and
+  `src/task1/bge_m3_postprocess.py`. The paper uses the post-processed values
+  and reports the evaluator/data-contract limitation in the Task 1 section.

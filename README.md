@@ -73,6 +73,14 @@ cost of USD 0.348. Because the query-level gold contract is not confirmed,
 `src/task1/end_to_end_vlm.py` and `src/task1/aggregate_e2e.py` report this as a
 diagnostic proxy rather than an official Task 1 score.
 
+The latest API-free BGE-M3 post-processing pass re-evaluates all 13 pre-registered
+arms on the same 490 reconstructed groups (369 non-empty, 121 empty). The best
+dense+sparse+ColBERT fusion obtains Hit@1/5/10/20 = 0.266/0.545/0.675/0.818,
+Near@1 = 0.325, and MRR = 0.398, versus 0.220/0.493/0.631/0.751, 0.293,
+and 0.350 for the MiniLM fused baseline. Paired bootstrap and McNemar results,
+plus Thai/French and index-page error analyses, are recorded in
+`docs/EXPERIMENT_LOG.md` and the revised paper.
+
 ## Setup
 
 ```powershell
