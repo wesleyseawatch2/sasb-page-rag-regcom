@@ -157,58 +157,76 @@ end-to-end numbers more than further tuning the verifier prompt would.
   three reports it. This is exactly what the human-review CSV in §3.5 is for; agreement cannot be
   computed until it is actually annotated by a person.
 
-### 3.5 Follow-up (2026-09-01): neighbor-expanded top-20 run and a stratified review sample
+### 3.5 Follow-up (2026-09-01): neighbor-expanded top-20 run, now complete
 
 Since §3.3 was written, `runs/task1-dense-optimized` finished its full VLM rerank (490/490,
 Hit@1 0.328, MRR 0.431 — see `EXPERIMENT_LOG.md`'s "Dense retrieval and full VLM reranking" entry)
-and a new, deeper-candidate run (`runs/task1-neighbor2`: dense retrieval + a `neighbor_window=2`
-page expansion + a doubled top-20 VLM candidate pool) started and is **still in progress**. Per the
-task instructions for this pass, `runs/task1-neighbor2/vlm-full20*` was never read directly; every
-number below comes from the new API-free script `src/task1/aggregate_neighbor2.py`.
+and a deeper-candidate follow-up (`runs/task1-neighbor2`: dense retrieval + a `neighbor_window=2`
+page expansion + a doubled top-20 VLM candidate pool) started **and completed** later in this same
+pass (490/490, 0 errors). Per the task instructions, `runs/task1-neighbor2/vlm-full20*` was never
+read directly; every number below comes from the API-free script
+`src/task1/aggregate_neighbor2.py`, whose final output matched the other process's own independent
+"Neighbor-page candidate ablation" `EXPERIMENT_LOG.md` entry to the same rounding — a useful
+cross-check that the reimplemented ranking/metric logic is faithful to the original pipeline.
 
-Snapshot at 2026-09-01 12:06, 183/490 queries complete (Chinese and English only so far; French,
-Japanese, Korean, Thai entirely pending — do **not** read the "overall" row below as a 6-language
-figure):
+Final numbers, all six languages, 369 non-empty-gold queries:
 
-| Scope | Fused Hit@1 | VLM Hit@1 | Fused MRR | VLM MRR | Candidate recall@10 |
+| Scope | Fused Hit@1 | VLM Hit@1 | Fused MRR | VLM MRR | Candidate recall (fused-10 / VLM pool) |
 |---|---|---|---|---|---|
-| Overall (133 non-empty, 2 languages only) | 0.271 | 0.391 | 0.411 | 0.487 | 0.707 |
-| Chinese (84 non-empty) | 0.155 | 0.262 | 0.289 | 0.362 | 0.571 |
-| English (49 non-empty) | 0.469 | 0.612 | 0.620 | 0.702 | 0.939 |
+| Overall | 0.220 | 0.314 | 0.350 | 0.423 | 0.631 / 0.710 |
+| Chinese | 0.153 | 0.271 | 0.292 | 0.369 | 0.576 / 0.635 |
+| English | 0.453 | 0.547 | 0.591 | 0.648 | 0.891 / 0.922 |
+| French | 0.320 | **0.300 (degraded)** | 0.484 | 0.467 | 0.840 / 0.900 |
+| Japanese | 0.182 | 0.309 | 0.293 | 0.413 | 0.545 / 0.727 |
+| Korean | 0.216 | 0.392 | 0.389 | 0.508 | 0.686 / 0.784 |
+| Thai | 0.031 | 0.094 | 0.101 | 0.177 | 0.313 / 0.375 (weakest by far) |
 
-Mechanical Hit@1-transition category counts over the same 183 rows: `neither_top1` 37,
-`vlm_improved_top1` 21, `empty_gold` 50, `both_top1` 30, `candidate_recall_miss` 39,
-`vlm_degraded_top1` 6. Chinese's English-relative weakness on both fused and VLM Hit@1 is
-consistent with the CJK-retrieval difficulty already discussed for Japanese/Thai above; whether it
-holds once the harder Japanese/Thai/Korean queries are included remains to be seen and should not
-be assumed from this 2-language snapshot.
+Top-1 transition categories over all 490 rows: both correct 63, VLM improved 48, VLM degraded 18,
+neither correct 104, candidate-recall miss 136, empty gold 121.
 
-A stratified (language x mechanical-category), human-review-only sample was built from this same
-snapshot: `docs/TASK1_ERROR_REVIEW_SAMPLE.csv` (65 rows, via
-`src/task1/build_error_review_sample.py`). It intentionally leaves the qualitative
-error-taxonomy columns from `TASK1_VLM_PLAN.md` §13 (candidate-generation miss, wrong ToC section,
-exact-vs-adjacent page, SASB index/reference page, evidence-spanning pages, topical-mention-only,
-table/OCR extraction failure, missing value/unit/denominator/scope/period/disaggregation,
-full-vs-partial boundary, ambiguous/conflicting gold, model JSON/normalization failure) **blank**
-for a human annotator — nothing in this pass pre-fills a judgment. Because the source run has only
-reached Chinese and English, the sample is currently 2-language only; rerunning the same command
-after `runs/task1-neighbor2` completes will regenerate it with full 6-language stratified coverage.
+**This 20-candidate configuration is not a strict improvement over the 10-candidate
+dense-optimized run** (fused Hit@1 0.220, VLM Hit@1 0.328, MRR 0.431 — see §3.3/`EXPERIMENT_LOG.md`).
+The larger pool raises candidate recall (0.631 → 0.710) and helps four of six languages, but
+**French Top-1 accuracy regresses** (0.320 → 0.300, MRR 0.484 → 0.467) and the *pooled* Hit@5
+(0.561 vs 0.583), Near@1 (0.398 vs 0.423), and MRR (0.423 vs 0.431) each land slightly below the
+10-candidate run. The most likely mechanism is that doubling the candidate set gives the small
+`gpt-5.4-nano` reranker more visually similar distractor pages to choose among, which helps when
+the correct page was previously missing from the pool (candidate-recall-limited languages: Chinese,
+Japanese, Korean, Thai) but can hurt when the correct page was already reachable at 10 candidates
+and the extra distractors just add ranking noise (French, where fused-10 recall was already 0.840).
+This is the same qualitative lesson Cierpa draws from its own few-shot ablation (added context
+helps on average but is not uniformly beneficial per language) applied to candidate-pool size
+instead of demonstration count.
+
+A stratified (language x mechanical-category), human-review-only sample was rebuilt from the
+complete run: `docs/TASK1_ERROR_REVIEW_SAMPLE.csv` (65 rows, via
+`src/task1/build_error_review_sample.py`), now covering all six languages, including 7 French rows
+split across `vlm_degraded_top1`, `neither_top1`, `both_top1`, `candidate_recall_miss`,
+`vlm_improved_top1`, and `empty_gold` — a deliberately useful cell to inspect first given the
+finding above. It intentionally leaves the qualitative error-taxonomy columns from
+`TASK1_VLM_PLAN.md` §13 (candidate-generation miss, wrong ToC section, exact-vs-adjacent page,
+SASB index/reference page, evidence-spanning pages, topical-mention-only, table/OCR extraction
+failure, missing value/unit/denominator/scope/period/disaggregation, full-vs-partial boundary,
+ambiguous/conflicting gold, model JSON/normalization failure) **blank** for a human annotator —
+nothing in this pass pre-fills a judgment.
 
 ---
 
 ## 4. Recommended next error-analysis steps
 
-1. ~~Run the stratified 50–80 case sample~~ — **started**: `docs/TASK1_ERROR_REVIEW_SAMPLE.csv`
-   (65 rows) exists with real, mechanically-categorized context, but (a) covers only Chinese/English
-   pending `runs/task1-neighbor2` completion, and (b) still needs a human to actually fill in the
-   qualitative error-taxonomy columns — nothing in this repository should claim inter-annotator
-   agreement or a quantified taxonomy until that happens.
+1. ~~Run the stratified 50–80 case sample~~ — **done**: `docs/TASK1_ERROR_REVIEW_SAMPLE.csv`
+   (65 rows) exists with real, mechanically-categorized context across all six languages. What
+   remains is a human actually filling in the qualitative error-taxonomy columns — nothing in this
+   repository should claim inter-annotator agreement or a quantified taxonomy until that happens.
+   Start with the French `vlm_degraded_top1` rows (§3.5's headline finding).
 2. ~~Reconcile the fused-baseline discrepancy~~ — **done**, see `CLAUDE_PAPER_REVIEW.md` §6; it was
    a dense-retrieval-on/off configuration difference, not an unresolved inconsistency.
-3. Once `runs/task1-neighbor2/vlm-full20-cache.jsonl` stops growing, rerun
-   `py src/task1/aggregate_neighbor2.py` and `py src/task1/build_error_review_sample.py`, then
-   distill the final numbers into a dated `EXPERIMENT_LOG.md` entry, replacing the "in progress"
-   framing used in §3.5 above and in `_claude.tex` §4.7.
+3. ~~Rerun the aggregator once the run completes~~ — **done**: `runs/task1-neighbor2` finished
+   (490/490, 0 errors) partway through this pass; both scripts were rerun and `EXPERIMENT_LOG.md`,
+   this document, and `_claude.tex` §4.7 were all updated from "in progress" to final numbers.
+   What is not yet decided is which configuration (10-candidate vs. 20-candidate) to freeze as the
+   paper's primary Task 1 diagnostic, since neither strictly dominates — see
+   `CLAUDE_PAPER_REVIEW.md` §6.
 4. If a confusion matrix for the actual reported Gemini/GLM 793-row runs is wanted for the paper,
    regenerate it from the existing prediction CSVs with `src/task2/score_and_merge_predictions.py`
    — no new model calls required.

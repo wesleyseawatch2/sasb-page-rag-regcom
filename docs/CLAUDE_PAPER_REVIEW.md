@@ -213,21 +213,26 @@ its full VLM rerank (490/490 queries, Hit@1 0.328, MRR 0.431) and is now the mos
 diagnostic in `EXPERIMENT_LOG.md`.
 
 A newer run, `runs/task1-neighbor2` (top-20 candidates, `neighbor_window=2` page expansion, same
-dense-enabled fusion), was already **in progress** when this follow-up pass started and remains
-in progress (183/490 queries complete as of the 12:06 snapshot cited in `EXPERIMENT_LOG.md`'s
-newest entry). This review still did not read `runs/task1-neighbor2/vlm-full20*` directly, in
-line with the task instructions each time — all neighbor2 numbers anywhere in this project's docs
-or in `_claude.tex` were produced exclusively by the new API-free script
-`src/task1/aggregate_neighbor2.py`, which reads only `retrieval.jsonl` and the VLM cache file and
-writes its output under `artifacts/metrics/`, never into `runs/`.
+dense-enabled fusion), was **in progress** when this follow-up pass started (183/490, Chinese and
+English only) and **completed later in the same pass** (490/490, 0 errors, all six languages).
+This review still did not read `runs/task1-neighbor2/vlm-full20*` directly at any point, in line
+with the task instructions each time — every neighbor2 number anywhere in this project's docs or
+in `_claude.tex` was produced exclusively by the API-free script
+`src/task1/aggregate_neighbor2.py`, which reads only `retrieval.jsonl` and the VLM cache/output
+files and writes under `artifacts/metrics/`, never into `runs/`. Its final numbers matched, to the
+same rounding, the independently-computed "Neighbor-page candidate ablation" entry the other
+process wrote to `EXPERIMENT_LOG.md` for the same run — a useful cross-check.
 
-**Recommendation, updated:** once `runs/task1-neighbor2` finishes, rerun
-`py src/task1/aggregate_neighbor2.py` one more time and treat *that* run as the frozen
-configuration for the paper (it methodologically supersedes both the no-dense and the
-dense-optimized top-10 runs: dense retrieval, RRF-fused rules, and now a doubled top-20 candidate
-pool with neighbor-page expansion). Until then, cite the dense-optimized run's complete numbers as
-the primary diagnostic and the neighbor2 snapshot only as a labeled, partial, in-progress data
-point — exactly how `_claude.tex` §4.7 now presents them.
+**Recommendation, corrected:** the original plan to simply "treat neighbor2 as the frozen
+configuration once it completes" turned out to be premature — the completed numbers show it is
+**not a strict improvement** over the 10-candidate dense-optimized run. The larger, neighbor-expanded
+pool raises candidate recall (0.631 → 0.710) and helps Hit@1/MRR for four of six languages
+(Chinese, Japanese, Korean, Thai), but **French Top-1 accuracy regresses** (0.320 → 0.300) and the
+pooled Hit@5/Near@1/MRR each land slightly below the 10-candidate run's. Freezing a single
+configuration for the paper therefore requires a judgment call the authors should make explicitly
+(e.g., per-language routing, or accepting the pooled MRR trade-off for the recall gain) rather than
+one this review should make for them. `_claude.tex` §4.7 now reports both runs' final numbers side
+by side with this trade-off stated plainly, rather than presenting either as simply "better."
 
 ---
 
@@ -235,9 +240,11 @@ point — exactly how `_claude.tex` §4.7 now presents them.
 
 1. ~~Resolve the fused-baseline discrepancy~~ — **done**, see §6 above; it was a genuine
    dense-retrieval-on/off configuration difference, not an error.
-2. Once `runs/task1-neighbor2` completes, rerun `src/task1/aggregate_neighbor2.py` and record the
-   result as the frozen configuration in `EXPERIMENT_LOG.md`, per `TASK1_VLM_PLAN.md` §16
-   ("Definition of done").
+2. ~~Rerun the aggregator once `task1-neighbor2` completes~~ — **done**; both the 10-candidate and
+   20-candidate (neighbor-expanded) configurations are now complete and documented in
+   `EXPERIMENT_LOG.md`. What remains is a genuine decision, not a rerun: pick one configuration (or
+   an explicit per-language routing) to freeze as *the* Task 1 diagnostic for the paper, since
+   neither configuration dominates the other (see §6).
 3. Confirm the official Subtask 1 evaluator and gold-page-set handling rules (empty-gold credit,
    multi-page gold sets) with the task organizers before reporting any Task 1 number as anything
    other than diagnostic — this is the single blocking item per `TASK1_VLM_PLAN.md` §1, and remains
@@ -246,12 +253,13 @@ point — exactly how `_claude.tex` §4.7 now presents them.
    document identities across train/test, the way CSCU did for the official Subtask 1 split
    (§3.1 above). If it does, the current "793 non-Chinese rows" framing should say so, the same way
    CSCU now frames its own numbers as "seen-document, unseen-query."
-5. A stratified error-annotation sample now exists (`docs/TASK1_ERROR_REVIEW_SAMPLE.csv`, 65 rows,
-   built by `src/task1/build_error_review_sample.py`), but it currently only has Chinese and
-   English coverage because `runs/task1-neighbor2` hadn't reached the other four languages yet at
-   sampling time. Rerun the same script after the run completes for full 6-language stratified
-   coverage, then have at least one human annotator fill in the (currently blank) error-taxonomy
-   columns before treating the taxonomy as quantified rather than qualitative.
+5. A stratified error-annotation sample now exists with full 6-language coverage
+   (`docs/TASK1_ERROR_REVIEW_SAMPLE.csv`, 65 rows, built by
+   `src/task1/build_error_review_sample.py` after `task1-neighbor2` completed). The remaining step
+   is a human annotator filling in the (currently blank) error-taxonomy columns — no inter-annotator
+   agreement or quantified taxonomy can be claimed until that happens. Consider oversampling the
+   French `vlm_degraded_top1` cell specifically, since that language's Top-1 regression under the
+   20-candidate configuration (§6) is the single most actionable open finding from this pass.
 6. See `docs/CLAUDE_ERROR_ANALYSIS.md` for the consolidated, cross-method error taxonomy and
    concrete diagnostic examples, and `docs/FINAL_SUBMISSION_CHECKLIST.md` /
    `docs/FINAL_REPRODUCIBILITY.md` for the current submission-readiness state.

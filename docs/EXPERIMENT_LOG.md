@@ -312,11 +312,33 @@ Copy this template for every reported run.
   by Git). These remain reconstructed diagnostics, not official Task 1 scores,
   because the released query-level gold/evaluator contract is unavailable.
 
-## Neighbor-expanded top-20 VLM reranking, task1-neighbor2 (2026-09-01, in progress)
+## Neighbor-page candidate ablation (2026-09-01)
 
-- Status: **in progress** at the time of this entry -- another process is
-  actively writing `runs/task1-neighbor2/vlm-full20-cache.jsonl`; nothing below
-  is a final or official result.
+- Candidate construction: retain the fused top-10 pages, then append pages
+  within a +/-2 PDF-page window around those hits before the lane-union pool.
+  This raises candidate-pool recall from 0.631 at top-10 to 0.710 at top-20
+  (0.789 at top-30), without changing the fused retrieval ranking.
+- VLM run: all 490 groups, 20 candidate images per query, `gpt-5.4-nano`,
+  96-DPI low-detail images, 900 output tokens. Completion was 490/490 after
+  one rate-limit retry; 13,178,046 input and 275,396 output tokens cost an
+  estimated USD 2.980.
+- Dense + neighbor-pool VLM ranking: Hit@1 0.314, Hit@5 0.561, Hit@10
+  0.648, Near@1 0.398, and MRR 0.423. Relative to the frozen 10-candidate
+  run (0.328 / 0.583 / 0.631 / 0.431), the larger pool improves coverage at
+  Hit@10 but slightly harms Top-1 and MRR, suggesting that nano becomes less
+  decisive when shown 20 visually similar pages.
+- Decision: keep the 10-candidate dense + VLM configuration as the primary
+  diagnostic; retain this 20-candidate neighbor expansion as an ablation and
+  as a possible input to a stronger second-stage model. The results are still
+  diagnostic rather than official Subtask 1 scores.
+
+## Neighbor-expanded top-20 VLM reranking, task1-neighbor2 (2026-09-01, complete)
+
+- Status: **complete** -- `runs/task1-neighbor2/vlm-full20-cache.jsonl` reached
+  490/490 at 12:42 (Asia/Taipei) with 0 errors. This entry started as an
+  in-progress snapshot (183/490) and was updated in place once the run
+  finished; it is still not an *official* Task 1/Subtask 1 result (see the
+  claim-boundary note repeated throughout this log).
 - Configuration: same 490 reconstructed `report_metric` query groups (369
   non-empty gold) as the dense-optimized run above. Retrieval fuses TF-IDF,
   character TF-IDF, metric/unit rules, and dense
@@ -326,43 +348,53 @@ Copy this template for every reported run.
   before truncating to a **top-20** VLM candidate pool -- twice the candidate
   depth of the dense-optimized run. VLM: `gpt-5.4-nano-2026-03-17`, one request
   per query.
-- Snapshot at 2026-09-01 12:06 (Asia/Taipei): 183/490 queries complete, 0
-  errors, 307 pending. Only Chinese and English have any completed queries so
-  far; French, Japanese, Korean, and Thai are entirely pending. The "overall"
-  figures below are therefore skewed toward these two languages and are **not**
-  yet representative of the eventual 6-language result -- do not quote them as
-  a 6-language number.
-- Paired fused-baseline vs VLM on the 133 non-empty-gold queries completed so
-  far: Hit@1 0.271 -> 0.391, Hit@5 0.609 -> 0.632, Hit@10/candidate recall
-  0.707 (VLM reranking cannot exceed candidate recall), Near@1 0.331 -> 0.459,
-  MRR 0.411 -> 0.487.
-- Per-language so far -- Chinese (84 non-empty): fused Hit@1 0.155 -> VLM
-  0.262, MRR 0.289 -> 0.362, candidate recall 0.571. English (49 non-empty):
-  fused Hit@1 0.469 -> VLM 0.612, MRR 0.620 -> 0.702, candidate recall 0.939.
-- API accounting so far: 5,409,102 input tokens (93,568 cached) and 103,447
-  output tokens across 183 complete calls, 0 errors; estimated cost USD 1.211
-  using the same $0.20/M input / $1.25/M output nano-rate convention as the
-  entries above (cached-token discount not modeled); mean latency 10.775
-  seconds, median 7.931 seconds, p95 29.267 seconds.
+- Final numbers, computed independently by the new API-free
+  `src/task1/aggregate_neighbor2.py` script, match the "Neighbor-page candidate
+  ablation" entry immediately above **exactly** (same Hit@1/5/10, Near@1, MRR,
+  token counts, and cost) -- a useful cross-check between the two analyses.
+  This entry adds the per-language breakdown that entry does not include, plus
+  a candidate-recall figure computed against the VLM's actual pool rather than
+  only the fused top-10.
+- Overall (369 non-empty): fused baseline Hit@1 0.220, Hit@5 0.493, Hit@10
+  0.631, Near@1 0.293, MRR 0.350 -> VLM (top-20 pool) Hit@1 0.314, Hit@5 0.561,
+  Hit@10 0.648, Near@1 0.398, MRR 0.423. Candidate recall at the fused top-10
+  is 0.631; recall of the VLM's actual (neighbor-expanded, top-20) pool is
+  0.710 -- this is why VLM Hit@10 (0.648) can exceed the fused-top-10 recall
+  figure: the VLM sees more candidates than that slice measures.
+- Top-1 transition categories (490 rows): both correct 63, VLM improved 48,
+  VLM degraded 18, neither correct 104, candidate-recall miss 136, empty gold
+  121.
+- Per-language, fused Hit@1 -> VLM Hit@1 (MRR fused -> VLM; candidate recall
+  at fused-10 -> at VLM pool): Chinese 0.153 -> 0.271 (0.292 -> 0.369; 0.576 ->
+  0.635); English 0.453 -> 0.547 (0.591 -> 0.648; 0.891 -> 0.922); French
+  0.320 -> 0.300, i.e. **VLM reranking degraded French Top-1** (0.484 -> 0.467;
+  0.840 -> 0.900); Japanese 0.182 -> 0.309 (0.293 -> 0.413; 0.545 -> 0.727);
+  Korean 0.216 -> 0.392 (0.389 -> 0.508; 0.686 -> 0.784); Thai 0.031 -> 0.094,
+  still the weakest language by a wide margin (0.101 -> 0.177; 0.313 -> 0.375).
+  The French regression is a genuine finding, not noise from a small sample
+  (50 non-empty-gold queries) -- it echoes Cierpa's finding that added context
+  (there, few-shot examples; here, a larger candidate pool) does not uniformly
+  help every language, and is worth a closer qualitative look via the sample
+  below.
+- API accounting: 13,178,046 input tokens (315,648 cached) and 275,396 output
+  tokens across 490 complete calls, 0 errors; estimated cost USD 2.980 using
+  the same $0.20/M input / $1.25/M output nano-rate convention as the entries
+  above (cached-token discount not modeled); mean latency 10.393 seconds,
+  median 7.506 seconds, p95 33.181 seconds.
 - Reproducible, API-free entry point: `py src/task1/aggregate_neighbor2.py`.
-  Reads only `runs/task1-neighbor2/retrieval.jsonl` and
-  `runs/task1-neighbor2/vlm-full20-cache.jsonl` (or `vlm-full20.jsonl` once the
-  run finishes writing a post-processed file), makes no API calls, and never
-  writes into `runs/`; output goes to
-  `artifacts/metrics/task1_neighbor2_summary.json` and
-  `artifacts/metrics/task1_neighbor2_per_query.csv`. Rerun it once
-  `vlm-full20-cache.jsonl` stops growing to regenerate final numbers before
-  citing this run as complete.
-- A stratified, human-review-only error sample was built from this snapshot:
-  `py src/task1/build_error_review_sample.py` writes
+  Reads only `runs/task1-neighbor2/retrieval.jsonl` and, preferentially,
+  `runs/task1-neighbor2/vlm-full20.jsonl` (falling back to
+  `vlm-full20-cache.jsonl`), makes no API calls, and never writes into `runs/`;
+  output goes to `artifacts/metrics/task1_neighbor2_summary.json` and
+  `artifacts/metrics/task1_neighbor2_per_query.csv`.
+- A stratified, human-review-only error sample was regenerated from the
+  complete run: `py src/task1/build_error_review_sample.py` writes
   `docs/TASK1_ERROR_REVIEW_SAMPLE.csv` (65 rows, stratified by language and by
-  a mechanically derived Hit@1 transition category). Because only Chinese and
-  English are represented in the source data so far, the sample currently only
-  covers those two languages; rerun the same command after the full run
-  completes for proper 6-language stratified coverage. The script never fills
-  in the qualitative error-taxonomy columns from Section 13 below -- those are
-  left blank for a human annotator.
-- This remains a diagnostic snapshot of an unfinished run, not an official
-  Task 1 score and not yet a frozen configuration. Until it completes, the
-  "Dense retrieval and full VLM reranking" entry above (490/490, top-10
-  candidates) remains the most recent **complete** diagnostic to cite.
+  a mechanically derived Hit@1 transition category; now covers all six
+  languages). The script never fills in the qualitative error-taxonomy columns
+  from Section 13 below -- those are left blank for a human annotator.
+- Read alongside the "Decision" line in the "Neighbor-page candidate ablation"
+  entry above: the larger candidate pool measurably helps recall and several
+  languages' Top-1/MRR, but is not a strict improvement (French regresses, and
+  the pooled MRR/Near@1/Hit@5 are each slightly below the 10-candidate run's).
+  Both configurations remain diagnostic, not official Task 1 scores.
