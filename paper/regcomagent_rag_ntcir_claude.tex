@@ -254,13 +254,14 @@ Comparison & $\Delta$ Accuracy & 95\% CI & $\Delta$ Macro F1 & 95\% CI & Holm $p
 \midrule
 Gemini--GLM & +0.0227 & [-0.0025, 0.0492] & +0.0177 & [-0.0137, 0.0502] & 0.209 \\
 Gemini--GPT-5.4-mini & +0.0293 & [-0.0025, 0.0618] & +0.0395 & [-0.0000, 0.0795] & 0.294 \\
-Gemini--MiniLM & +0.1907 & [0.1488, 0.2358] & +0.1653 & [0.1204, 0.2111] & $<0.001$ \\
+Gemini--MiniLM & +0.1907 & [0.1488, 0.2358] & +0.1653 & [0.1204, 0.2111] & $<0.001^{***}$ \\
 GLM--GPT-5.4-mini & +0.0066 & [-0.0240, 0.0366] & +0.0218 & [-0.0119, 0.0553] & 0.748 \\
-GLM--MiniLM & +0.1680 & [0.1261, 0.2119] & +0.1476 & [0.1058, 0.1916] & $<0.001$ \\
-GPT-5.4-mini--MiniLM & +0.1614 & [0.1185, 0.2055] & +0.1259 & [0.0814, 0.1702] & $<0.001$ \\
+GLM--MiniLM & +0.1680 & [0.1261, 0.2119] & +0.1476 & [0.1058, 0.1916] & $<0.001^{***}$ \\
+GPT-5.4-mini--MiniLM & +0.1614 & [0.1185, 0.2055] & +0.1259 & [0.0814, 0.1702] & $<0.001^{***}$ \\
 \bottomrule
 \end{tabular}
 }
+\par\smallskip\noindent\footnotesize\emph{Note:} $^{*}p<0.05$, $^{**}p<0.01$, and $^{***}p<0.001$; stars mark two-sided exact McNemar tests after Holm correction across the six pairwise comparisons.
 \end{table*}
 
 The paired tests qualify the apparent ranking in Table~\ref{tab:overall}. After Holm correction across the six comparisons, each LLM configuration is significantly better than MiniLM on correctness, whereas the Gemini--GLM and Gemini--GPT-5.4-mini differences are not statistically significant at $\alpha=0.05$. Thus, the point estimate favors Gemini, but the available paired evidence supports a robust LLM-versus-embedding contrast rather than a conclusive winner among the LLMs. The full row-alignment and resampling record is provided in \texttt{artifacts/metrics/task2\_paired\_significance.json}.
@@ -461,7 +462,7 @@ The supplementary resources for this report, including the source code, public r
 This research was supported by the National Science and Technology Council (NSTC), Taiwan, under Grants NSTC 114-2425-H-305-003, NSTC 114-2221-E-305-002, and NSTC 115-2221-E-305-012; the Industrial Technology Research Institute (ITRI) and National Taipei University (NTPU), Taiwan, under Grants NTPU-114A513E01 and NTPU-113A513E01; National Taipei University under Grant 114-NTPU\_ORDA-F-004; and the Ministry of Education (MoE), Taiwan, through the AI CUP 2026 ESG Sustainability Commitment Verification Competition and Annotation Data Collection Project and the Physical AI and Physical AI Robotics Curriculum Development Project under the Forward-Looking AI Talent Cultivation Program.
 
 % References: keep regcomagent_rag_refs.bib in the same directory as this tex file.
-\bibliographystyle{unsrt}
+\bibliographystyle{ACM-Reference-Format}
 \bibliography{regcomagent_rag_refs}
 
 \end{document}
