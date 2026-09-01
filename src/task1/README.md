@@ -87,6 +87,10 @@ the extra image-token cost. Dense retrieval is optional and CPU-intensive; its
 page embeddings are truncated to 1,500 characters and cached under
 `cache/task1-dense/`.
 
+For the BGE-M3 + BGE-Reranker-v2-M3 local A/B run, including RTX 5070 CUDA
+setup, required private inputs, smoke test, and handoff checklist, see
+[`docs/TASK1_BGE_GPU_RUNBOOK.md`](../../docs/TASK1_BGE_GPU_RUNBOOK.md).
+
 The 6-query `candidate_pool` pilot sent 30 images per query. Candidate recall
 was 5/6, but VLM reranking reached only Hit@1 0.167, Hit@5 0.333, Hit@10
 0.500, and MRR 0.261 (estimated cost USD 0.056). The original 10-image pilot
