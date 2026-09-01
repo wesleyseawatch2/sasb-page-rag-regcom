@@ -65,6 +65,14 @@ reconstructed diagnostics, not official Task 1 scores.
 the fused baseline and reports per-language candidate recall, Top-1 transitions,
 and no-answer diagnostics without making additional API calls.
 
+The end-to-end diagnostic then reused each VLM-selected Top-1 page and made one
+additional low-cost `gpt-5.4-nano` call to predict `yes`, `yes but not complete`,
+or `no`. All 490 reconstructed query groups completed without API errors using
+96-DPI low-detail images, 300 maximum output tokens, and a total estimated
+cost of USD 0.348. Because the query-level gold contract is not confirmed,
+`src/task1/end_to_end_vlm.py` and `src/task1/aggregate_e2e.py` report this as a
+diagnostic proxy rather than an official Task 1 score.
+
 ## Setup
 
 ```powershell
@@ -106,6 +114,6 @@ bibliography.
 - Subtask 2 preserved experiments: complete
 - Cross-submission comparative analysis: complete
 - Task 1 local retrieval/evaluation and VLM interface: implemented
-- Task 1 API VLM pilot and full non-Chinese run: complete; full official run remains pending
+- Task 1 all-language VLM reranking and end-to-end diagnostic: complete; official reproduction remains pending
 - Task 1 official reproduction: pending confirmation of official inputs, gold
   page sets, PDF mapping, and evaluation rules

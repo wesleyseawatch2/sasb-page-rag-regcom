@@ -252,3 +252,27 @@ Copy this template for every reported run.
 - Reproducible analyzer: `src/task1/analyze_vlm.py`; it emits per-language
   metrics, transition categories, candidate-recall flags, and per-query error
   records without making API calls.
+
+## End-to-end VLM label diagnostic (2026-09-01)
+
+- Scope: all 490 reconstructed `report_metric` query groups, using the
+  Top-1 page from the completed Chinese and non-Chinese VLM reranking runs
+- Second-stage model: `gpt-5.4-nano-2026-03-17` through the Responses API;
+  one selected-page image plus extracted page text per query, 96 DPI, low
+  image detail, maximum 300 output tokens
+- Completion: 490/490 traces completed with no API errors; 1,284,477 input
+  and 72,735 output tokens; estimated cost USD 0.348 using $0.20/M input and
+  $1.25/M output rates; mean latency 3.67 seconds and p95 11.99 seconds
+- Predicted labels: `no` 301, `yes but not complete` 143, `yes` 46
+- The selected-page retrieval Hit@1 remains 0.268 overall (Chinese 0.200,
+  English 0.563, French 0.320, Japanese 0.127, Korean 0.392, Thai 0.047),
+  because the second-stage verifier cannot recover a page missing from the
+  candidate set
+- Only 74 selected pages have an unambiguous exact page-level label after
+  joining the reconstructed groups to the available truth rows; their label
+  accuracy is 0.459. This is a limited diagnostic, not an official Task 1
+  classification score, because the query-level target label and evaluator
+  are not confirmed and many grouped rows have conflicting page labels.
+- Reproducible entry points: `src/task1/end_to_end_vlm.py` performs the
+  cached second-stage calls; `src/task1/aggregate_e2e.py` merges language runs
+  and recomputes token, cost, latency, and diagnostic metrics.
